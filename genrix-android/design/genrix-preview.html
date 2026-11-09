@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Genrix</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Noto+Sans+Devanagari:wght@400;600&display=swap">
+<style>
+:root{--bg:#050505;--bg2:#000;--sf:#141414;--sf2:#1f1f1f;--ln:#2a2a2a;--tx:#fff;--mu:#a0a0a0;--li:#c6f432;--lit:#c6f432;--onli:#0b1200;--pu:#b8a1ff;--pk:#ffb6d5;--w:#fff;--onw:#000;--ct:rgba(198,244,50,.075);color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root[data-theme=light]{--bg:#f4f6ee;--bg2:#e4e7da;--sf:#fff;--sf2:#eceee3;--ln:#d6d9ca;--tx:#0b0d08;--mu:#555a4c;--lit:#4a6300;--w:#0b0d08;--onw:#fff;--ct:rgba(80,110,0,.09);color-scheme:light}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}*{box-sizing:border-box}
+body{margin:0;height:100%;background:var(--bg2);color:var(--tx);font:400 14px/21px "Sora","Noto Sans Devanagari",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:grid;place-items:center;-webkit-tap-highlight-color:transparent}
+.phone{position:relative;width:100%;height:100%;overflow:hidden;background:var(--bg)}
+@media(min-width:481px){.phone{width:400px;height:min(100%,840px);border:1px solid var(--ln);border-radius:34px}}
+button,label{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
+button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--lit);outline-offset:3px}
+svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.scr{position:absolute;inset:0;display:flex;flex-direction:column;padding:16px 20px;opacity:0;transform:translateY(14px) scale(.985);pointer-events:none;visibility:hidden;transition:opacity .35s ease,transform .45s cubic-bezier(.2,.8,.2,1),visibility 0s .45s;background:var(--bg) repeating-radial-gradient(ellipse at 28% 38%,transparent 0 15px,var(--ct) 15px 16px)}
+.scr.on{opacity:1;transform:none;pointer-events:auto;visibility:visible;transition-delay:0s}
+.pill{display:inline-flex;align-items:center;gap:6px;background:var(--li);color:var(--onli);font-weight:600;font-size:12px;padding:4px 14px;border-radius:99px}
+.dotg{width:6px;height:6px;border-radius:50%;background:var(--onli);opacity:.7}
+.ib{width:44px;height:44px;border-radius:50%;background:var(--sf);border:1px solid var(--ln);display:grid;place-items:center;transition:transform .2s}.ib:active{transform:scale(.92)}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px}
+canvas{display:block}
+/* splash */
+#sp{align-items:center;text-align:center;justify-content:space-between;padding-bottom:24px}
+#sp .stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;perspective:700px;width:100%}
+#o1{width:min(250px,70vw);aspect-ratio:1}
+.word{font-weight:700;font-size:clamp(44px,15vw,58px);letter-spacing:3px;color:var(--li);margin-top:-14px;transform-style:preserve-3d;transform:rotateX(var(--rx,10deg)) rotateY(var(--ry,-16deg));animation:sway 7s ease-in-out infinite;text-shadow:0 1px #8aa516,0 2px #8aa516,0 3px #7d9612,0 4px #7d9612,0 5px #6f8710,0 6px #6f8710,0 7px #62790e,0 8px #62790e,0 18px 26px rgba(198,244,50,.28)}
+@keyframes sway{50%{transform:rotateX(calc(var(--rx,10deg)*-.6)) rotateY(calc(var(--ry,-16deg)*-1))}}
+#sp h1{font-size:25px;line-height:32px;font-weight:600;margin:26px 0 20px;text-wrap:balance}
+.wbtn{width:100%;padding:16px;border-radius:16px;background:var(--w);color:var(--onw);font-weight:700;transition:transform .2s}.wbtn:active{transform:scale(.97)}
+/* home */
+.hi1{color:var(--mu);font-size:13px;display:flex;align-items:center;gap:10px}.av{width:44px;height:44px;border-radius:50%;background:var(--li);color:var(--onli);display:grid;place-items:center;font-weight:700}
+.ttl{font-size:27px;line-height:34px;font-weight:600;margin:18px 0 18px;text-wrap:balance}
+.bento{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:96px 96px;gap:10px}
+.cd{border-radius:22px;padding:14px;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;color:#0b0b0b;text-align:left;font-weight:600;transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s;position:relative}
+.cd:active{transform:scale(.96)}.cd .r{position:absolute;top:14px;right:14px;opacity:.7}
+.cd .ic{width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.12);display:grid;place-items:center}
+.talk{grid-row:span 2;background:var(--li);font-size:17px;box-shadow:0 10px 30px -12px rgba(198,244,50,.45)}.chat{background:var(--pu)}.srch{background:var(--pk)}
+.on .cd{animation:rise .6s cubic-bezier(.2,.8,.2,1) both}.on .chat{animation-delay:.08s}.on .srch{animation-delay:.16s}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}}
+.hh{display:flex;align-items:center;justify-content:space-between;margin:22px 0 6px;font-weight:600}.hh button{color:var(--lit);font-size:13px;padding:8px 0 8px 12px}
+#hl{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding-bottom:8px}
+.hr{display:flex;align-items:center;background:var(--sf);border:1px solid var(--ln);border-radius:16px;min-height:52px}
+.hb{flex:1;min-width:0;display:flex;align-items:center;gap:10px;padding:8px 6px 8px 10px;text-align:left}.ht{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+.dt{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:#0b0b0b;flex:none}.dt svg{width:17px;height:17px}.t-voice{background:var(--li)}.t-chat{background:var(--pu)}.t-image{background:var(--pk)}
+.hx{width:44px;height:44px;display:grid;place-items:center;color:var(--mu)}
+.empty{color:var(--mu);font-size:13px;padding:8px 4px}
+/* voice */
+#vc{align-items:center;text-align:center}#vc .bar{width:100%}
+.stat{display:flex;align-items:center;gap:6px;color:var(--mu);font-size:12px;justify-content:center;margin-top:8px}.stat i{width:6px;height:6px;border-radius:50%;background:var(--li);box-shadow:0 0 8px var(--li)}
+#o2{width:min(290px,74vw);aspect-ratio:1;margin:auto 0 0}
+#vtx{min-height:84px;font-size:17px;line-height:25px;font-weight:600;max-width:320px;margin:6px 0 10px;text-wrap:balance}
+.chips{display:flex;gap:8px;overflow-x:auto;width:100%;padding:2px 0 14px;scrollbar-width:none}.chips button{flex:none;border:1px solid var(--ln);background:var(--sf);border-radius:99px;padding:9px 14px;font-size:12.5px}
+.ctl{display:flex;align-items:center;justify-content:space-between;width:100%;padding:6px 6px 14px}
+.mic{width:84px;height:84px;border-radius:50%;background:var(--li);color:var(--onli);display:grid;place-items:center;position:relative;transition:transform .25s}.mic:active{transform:scale(.93)}.mic svg{width:32px;height:32px}
+.mic::before,.mic::after{content:"";position:absolute;inset:-9px;border-radius:50%;border:1.5px solid var(--lit);opacity:.28}.mic::after{inset:-20px;opacity:.14}
+.mic.hot::before{animation:ring 1.6s ease-out infinite}.mic.hot::after{animation:ring 1.6s ease-out .5s infinite}
+@keyframes ring{from{transform:scale(.9);opacity:.5}to{transform:scale(1.25);opacity:0}}
+/* chat */
+#ml,#ir{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:10px 0}
+.m{max-width:84%;padding:10px 14px;border-radius:18px;background:var(--sf);border:1px solid var(--ln);animation:rise .35s both;overflow-wrap:anywhere}.m.u{align-self:flex-end;background:var(--li);color:var(--onli);border-color:transparent;font-weight:600}
+.dots{display:flex;gap:5px;padding:14px}.dots i{width:7px;height:7px;border-radius:50%;background:var(--mu);animation:bob 1s ease-in-out infinite}.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}@keyframes bob{50%{transform:translateY(-5px);opacity:.5}}
+.inp{display:flex;gap:8px;padding-bottom:8px}.inp input{flex:1;min-width:0;padding:0 16px;height:48px;border-radius:24px;border:1px solid var(--ln);background:var(--sf);color:var(--tx);font:inherit}
+.send{width:48px;height:48px;border-radius:50%;background:var(--li);color:var(--onli);display:grid;place-items:center}
+/* image */
+.drop{display:grid;place-items:center;gap:8px;text-align:center;border:1.5px dashed var(--ln);border-radius:24px;padding:28px 16px;background:var(--sf);color:var(--mu)}.drop b{color:var(--tx);font-size:16px}.drop .ic{width:52px;height:52px;border-radius:50%;background:var(--pk);color:#0b0b0b;display:grid;place-items:center}
+.pv{width:100%;max-height:34vh;object-fit:cover;border-radius:20px;margin-bottom:12px}
+.sws{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:10px 0}.sws button{aspect-ratio:1;border-radius:16px;border:1px solid var(--ln);font-size:10px;font-weight:600;display:flex;align-items:flex-end;justify-content:center;padding:6px 0}
+/* sheet + toast */
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--sf);border-top:1px solid var(--ln);border-radius:26px 26px 0 0;padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px));transform:translateY(105%);transition:transform .4s cubic-bezier(.2,.8,.2,1);z-index:5}.sheet.on{transform:none}
+.sheet h3{margin:0 0 14px;font-size:16px}.row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--ln)}
+.seg{display:flex;background:var(--bg);border:1px solid var(--ln);border-radius:99px;padding:3px}.seg button{padding:7px 14px;border-radius:99px;font-size:13px}.seg button[aria-pressed=true]{background:var(--li);color:var(--onli);font-weight:600}
+.dng{color:#ff7b7b;font-weight:600;padding:10px 0}
+#toast{position:absolute;left:20px;right:20px;bottom:24px;background:var(--w);color:var(--onw);padding:12px 16px;border-radius:16px;font-size:13px;font-weight:600;opacity:0;transform:translateY(12px);transition:all .3s;pointer-events:none;z-index:9}#toast.on{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01s!important}}
+</style>
+</head>
+<body>
+<div class="phone">
+
+<section class="scr on" id="sp" aria-label="Welcome">
+ <div class="bar" style="justify-content:center"><span class="pill">Your AI buddy</span></div>
+ <div class="stage"><canvas id="o1" role="img" aria-label="Animated glass orb"></canvas><div class="word" id="wd">GENRIX</div></div>
+ <div style="width:100%"><h1>How may I help you today!</h1><button class="wbtn" onclick="go('home')">Get started</button></div>
+</section>
+
+<section class="scr" id="home" aria-label="Home" inert>
+ <div class="bar"><button class="ib" aria-label="Settings" onclick="sheet(1)"><svg class="i" viewBox="0 0 24 24"><path d="M4 8h16M4 16h10"/></svg></button><span class="pill">Genrix</span><div class="av" aria-hidden="true">G</div></div>
+ <p class="hi1" style="margin:14px 0 0">Hi, there</p>
+ <h2 class="ttl">How may I help you today?</h2>
+ <div class="bento">
+  <button class="cd talk" onclick="openVoice()"><span class="ic"><svg class="i" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span>Talk<br>with Genrix<svg class="i r" viewBox="0 0 24 24"><path d="M7 17 17 7M8 7h9v9"/></svg></button>
+  <button class="cd chat" onclick="openChat()"><span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></span>Chat with Genrix<svg class="i r" viewBox="0 0 24 24"><path d="M7 17 17 7M8 7h9v9"/></svg></button>
+  <button class="cd srch" onclick="openImg()"><span class="ic"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="m4 18 5-5 4 4 3-3 4 4"/></svg></span>Search by image<svg class="i r" viewBox="0 0 24 24"><path d="M7 17 17 7M8 7h9v9"/></svg></button>
+ </div>
+ <div class="hh"><span>History</span><button onclick="clearAll()">Clear all</button></div>
+ <div id="hl"></div>
+</section>
+
+<section class="scr" id="vc" aria-label="Talk with Genrix" inert>
+ <div class="bar"><button class="ib" aria-label="Back" onclick="go('home')"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span class="pill"><i class="dotg"></i>Genrix</span><span style="width:44px"></span></div>
+ <div class="stat"><i></i><span id="vs">Online</span></div>
+ <canvas id="o2" role="img" aria-label="Animated glass orb that reacts to your voice"></canvas>
+ <p id="vtx" aria-live="polite">Tap the mic and ask anything.</p>
+ <div class="chips" id="vch"></div>
+ <div class="ctl"><button class="ib" aria-label="Switch to chat" onclick="openChat(cur)"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></button><button class="mic" id="vm" aria-label="Talk" onclick="toggleMic()"><svg class="i" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button><button class="ib" aria-label="Close" onclick="go('home')"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+</section>
+
+<section class="scr" id="ch" aria-label="Chat with Genrix" inert>
+ <div class="bar"><button class="ib" aria-label="Back" onclick="go('home')"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span class="pill"><i class="dotg"></i>Genrix</span><span style="width:44px"></span></div>
+ <div id="ml" aria-live="polite"></div>
+ <div class="chips" id="cch"></div>
+ <form class="inp" onsubmit="event.preventDefault();sendChat()"><input id="ci" placeholder="Ask Genrix…" aria-label="Message" autocomplete="off"><button class="send" aria-label="Send"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></form>
+</section>
+
+<section class="scr" id="im" aria-label="Search by image" inert>
+ <div class="bar"><button class="ib" aria-label="Back" onclick="go('home')"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span class="pill">Search by image</span><span style="width:44px"></span></div>
+ <div id="ir"><label class="drop" id="dz"><span class="ic"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="m4 18 5-5 4 4 3-3 4 4"/></svg></span><b>Take or pick a photo</b><span>Genrix reads its colours, light and size on your phone. The photo never leaves this device.</span><input type="file" accept="image/*" hidden onchange="pick(this.files[0])"></label><div id="ires"></div></div>
+</section>
+
+<div class="sheet" id="sh" role="dialog" aria-label="Settings" inert>
+ <h3>Settings</h3>
+ <div class="row"><span>Language</span><div class="seg"><button data-l="en" onclick="setS('l','en')">English</button><button data-l="hi" onclick="setS('l','hi')">हिन्दी</button></div></div>
+ <div class="row"><span>Speak replies</span><div class="seg"><button data-s="1" onclick="setS('sp',1)">On</button><button data-s="0" onclick="setS('sp',0)">Off</button></div></div>
+ <div class="row"><span>Theme</span><div class="seg"><button data-t="dark" onclick="setS('th','dark')">Dark</button><button data-t="light" onclick="setS('th','light')">Light</button></div></div>
+ <button class="dng" onclick="clearAll();sheet(0)">Clear history</button>
+ <button class="wbtn" onclick="sheet(0)">Done</button>
+</div>
+<div id="toast" role="status"></div>
+</div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let S={l:'en',sp:1,th:'dark'},H=[],cur=null,state='idle',rec=null,lvl=0,tgt=0,tilt={x:0,y:0},screen='sp';
+try{S={...S,...JSON.parse(localStorage.getItem('gx.s')||'{}')};H=JSON.parse(localStorage.getItem('gx.h')||'[]')}catch(e){}
+const store=()=>{try{localStorage.setItem('gx.s',JSON.stringify(S));localStorage.setItem('gx.h',JSON.stringify(H.slice(0,40)))}catch(e){}};
+const t=(en,hi)=>S.l==='hi'?hi:en,esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const IC={voice:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',chat:'<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>',image:'<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="m4 18 5-5 4 4 3-3 4 4"/>'};
+function note(m){const e=$('#toast');e.textContent=m;e.classList.add('on');clearTimeout(note.t);note.t=setTimeout(()=>e.classList.remove('on'),2600)}
+function go(id){const map={sp:'#sp',home:'#home',voice:'#vc',chat:'#ch',img:'#im'};if(id!=='voice')stopVoice();$$('.scr').forEach(s=>{const on='#'+s.id===map[id];s.classList.toggle('on',on);s.inert=!on});screen=id;if(id==='home')drawH()}
+function sheet(on){const s=$('#sh');s.classList.toggle('on',!!on);s.inert=!on;if(on)sync()}
+function setS(k,v){S[k]=v;store();sync();if(k==='l')chips()}
+function sync(){document.documentElement.dataset.theme=S.th;document.documentElement.lang=S.l==='hi'?'hi':'en';$$('[data-l]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.l===S.l));$$('[data-s]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.s===S.sp));$$('[data-t]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===S.th))}
+const SUG=()=>S.l==='hi'?['अभी कितने बजे हैं?','एक चुटकुला सुनाओ','18% of 2450','5 मिनट का टाइमर']:['What time is it?','Tell me a joke','18% of 2450','Timer for 2 minutes'];
+function chips(){['#vch','#cch'].forEach(s=>{$(s).innerHTML=SUG().map(x=>`<button>${esc(x)}</button>`).join('')})}
+$$('.chips').forEach(c=>c.addEventListener('click',e=>{const b=e.target.closest('button');if(b)ask(b.textContent,screen==='voice'?'voice':'chat')}));
+/* history */
+function drawH(){const l=$('#hl');l.innerHTML=H.length?H.map(h=>`<div class="hr"><button class="hb" data-o="${h.id}"><span class="dt t-${h.k}"><svg class="i" viewBox="0 0 24 24">${IC[h.k]}</svg></span><span class="ht">${esc(h.title)}</span></button><button class="hx" data-d="${h.id}" aria-label="Delete"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>`).join(''):`<p class="empty">${t('Nothing yet. Start with Talk with Genrix.','अभी कुछ नहीं। Genrix से बात करके शुरू करें।')}</p>`}
+$('#hl').addEventListener('click',e=>{const o=e.target.closest('[data-o]'),d=e.target.closest('[data-d]');if(d){H=H.filter(h=>h.id!=d.dataset.d);store();drawH()}else if(o){const h=H.find(x=>x.id==o.dataset.o);if(!h)return;h.k==='image'?showSw(h.p,h.info,null):openChat(h)}});
+const clearAll=()=>{H=[];store();drawH()};
+function keep(){if(!cur||!cur.m.length)return;if(!H.includes(cur))H.unshift(cur);cur.title=cur.m.find(x=>x[0]==='u')?.[1]||cur.title;store()}
+/* brain: a small on-device helper for the demo; the real app uses Gemini */
+function brain(q){const s=q.toLowerCase(),n=new Date(),lc=S.l==='hi'?'hi-IN':'en-IN';let m;
+if(m=s.match(/timer.*?(\d+)\s*(min|sec|मिनट|सेकंड)|(\d+)\s*(min|sec|मिनट|सेकंड).*?(timer|टाइमर)/)){const v=+(m[1]||m[3]),u=m[2]||m[4],ms=v*(/^(min|मिनट)/.test(u)?60000:1000);if(v>0&&ms<=7200000){setTimeout(()=>{beep();note(t('Timer done.','टाइमर पूरा हुआ।'))},ms);return t(`Timer set for ${v} ${/^(min|मिनट)/.test(u)?'minute(s)':'second(s)'}. I’ll beep when it’s done.`,`${v} ${/^(min|मिनट)/.test(u)?'मिनट':'सेकंड'} का टाइमर चालू है। पूरा होने पर बीप बजेगी।`)}}
+if(m=s.match(/(\d+(?:\.\d+)?)\s*%\s*(?:of|ka|का)\s*(\d+(?:\.\d+)?)/))return t(`${m[1]}% of ${m[2]} is ${+(m[1]*m[2]/100).toFixed(2)}.`,`${m[2]} का ${m[1]}% है ${+(m[1]*m[2]/100).toFixed(2)}।`);
+if(/\d\s*[-+*/x×÷]\s*\d/.test(s)){const e=s.replace(/[x×]/g,'*').replace(/÷/g,'/').replace(/[^\d.+\-*/() ]/g,'').trim();try{const r=Function('"use strict";return('+e+')')();if(isFinite(r))return t(`${e} = ${+r.toFixed(6)}`,`${e} = ${+r.toFixed(6)}`)}catch(x){}}
+if(/time|samay|baje|समय|बजे|टाइम/.test(s))return t('It’s '+n.toLocaleTimeString(lc,{hour:'numeric',minute:'2-digit'})+'.','अभी '+n.toLocaleTimeString(lc,{hour:'numeric',minute:'2-digit'})+' हुए हैं।');
+if(/date|day|tarikh|तारीख|आज|दिन/.test(s))return n.toLocaleDateString(lc,{weekday:'long',day:'numeric',month:'long'})+'.';
+if(/battery|बैटरी/.test(s)){navigator.getBattery?navigator.getBattery().then(b=>reply(t(`Battery is at ${Math.round(b.level*100)}%${b.charging?' and charging':''}.`,`बैटरी ${Math.round(b.level*100)}% है${b.charging?' और चार्ज हो रही है':''}।`))):0;return navigator.getBattery?'…':t('This browser doesn’t share battery info.','यह ब्राउज़र बैटरी की जानकारी नहीं देता।')}
+if(/joke|funny|chutkula|जोक|चुटकुला/.test(s)){const J=S.l==='hi'?['टीचर: 5 में से 2 गए तो? बच्चा: 3 बचे, पर वो भी सो गए!','पति: चाय में चीनी कम है। पत्नी: हिला दो, पूरी मिल जाएगी!']:['I told my phone I needed space. Now it won’t stop showing me storage warnings.','Why did the developer go broke? He used up all his cache.','My Wi-Fi and I have a lot in common: we both drop out when it matters.'];return J[Math.random()*J.length|0]}
+if(/coin|toss|sikka|सिक्का/.test(s))return Math.random()<.5?t('Heads.','चित।'):t('Tails.','पट।');
+if(/^(hi|hello|hey|namaste|नमस्ते)/.test(s))return t('Hi! What can I do for you?','नमस्ते! बताइए, क्या मदद करूँ?');
+if(/who are you|your name|tum kaun|तुम कौन|नाम/.test(s))return t('I’m Genrix, your AI buddy.','मैं Genrix हूँ, आपका AI दोस्त।');
+if(/thank|shukriya|धन्यवाद|शुक्रिया/.test(s))return t('Anytime.','कभी भी।');
+return t('In this preview I can do time, date, maths, timers, battery, jokes and a coin toss. The full Genrix app answers everything else.','इस प्रिव्यू में मैं समय, तारीख, गणित, टाइमर, बैटरी, चुटकुले और सिक्का उछालना कर सकता हूँ। बाकी सब पूरा Genrix ऐप बताएगा।')}
+function beep(){try{const a=new(window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);g.gain.value=.15;o.frequency.value=880;o.start();o.stop(a.currentTime+.4)}catch(e){}}
+function reply(r){if(!cur)return;cur.m.push(['b',r]);keep();if(screen==='chat')msgs();else if(screen==='voice'){$('#vtx').textContent=r}}
+function ask(q,kind){q=q.trim();if(!q)return;if(!cur)cur={id:Date.now(),k:kind,title:q,m:[]};cur.m.push(['u',q]);keep();
+if(kind==='chat'){msgs(true);setTimeout(()=>{reply(brain(q))},650)}
+else{$('#vtx').textContent=q;vs('think');setTimeout(()=>{const r=brain(q);reply(r);speak(r)},700)}}
+/* chat */
+function msgs(typing){const l=$('#ml');l.innerHTML=`<div class="m">${t('Hi! I’m Genrix. Ask me anything, or tap a suggestion.','नमस्ते! मैं Genrix हूँ। कुछ भी पूछिए या नीचे सुझाव चुनिए।')}</div>`+(cur?cur.m.map(x=>`<div class="m ${x[0]==='u'?'u':''}">${esc(x[1])}</div>`).join(''):'')+(typing?'<div class="m"><div class="dots" aria-label="Genrix is typing"><i></i><i></i><i></i></div></div>':'');l.scrollTop=l.scrollHeight}
+function sendChat(){const i=$('#ci');ask(i.value,'chat');i.value=''}
+function openChat(h){stopVoice();cur=h&&h.m?h:null;go('chat');chips();msgs()}
+/* voice */
+function vs(s){state=s;$('#vs').textContent={idle:t('Online','ऑनलाइन'),listen:t('Listening…','सुन रहा हूँ…'),think:t('Thinking…','सोच रहा हूँ…'),speak:t('Speaking…','बोल रहा हूँ…')}[s];$('#vm').classList.toggle('hot',s==='listen');tgt={idle:0,listen:.35,think:.2,speak:.5}[s]}
+function openVoice(){cur=null;go('voice');chips();vs('idle');$('#vtx').textContent=t('Tap the mic and ask anything.','माइक दबाकर कुछ भी पूछिए।')}
+function stopVoice(){try{rec&&rec.abort()}catch(e){}rec=null;try{speechSynthesis.cancel()}catch(e){}if(state!=='idle')vs('idle')}
+function speak(r){if(!S.sp||!window.speechSynthesis){vs('idle');return}const u=new SpeechSynthesisUtterance(r);u.lang=S.l==='hi'?'hi-IN':'en-IN';u.onend=u.onerror=()=>vs('idle');vs('speak');speechSynthesis.cancel();speechSynthesis.speak(u)}
+function toggleMic(){if(state==='listen'){rec&&rec.stop();return}if(state==='speak'||state==='think'){stopVoice();return}
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){note(t('Voice input isn’t available here. Tap a suggestion, or use Chat.','यहाँ वॉइस इनपुट नहीं है। सुझाव दबाएँ या Chat खोलें।'));return}
+rec=new SR();rec.lang=S.l==='hi'?'hi-IN':'en-IN';rec.interimResults=true;let fin='';
+rec.onresult=e=>{let s='';for(const r of e.results){s+=r[0].transcript;if(r.isFinal)fin=s}$('#vtx').textContent=s};
+rec.onerror=e=>{vs('idle');note(e.error==='not-allowed'?t('Allow the microphone to talk to Genrix.','Genrix से बात करने के लिए माइक की अनुमति दें।'):t('Didn’t catch that. Try again.','सुनाई नहीं दिया। फिर कोशिश करें।'))};
+rec.onend=()=>{if(state==='listen'){fin?ask(fin,'voice'):vs('idle')}};
+try{vs('listen');$('#vtx').textContent='…';rec.start()}catch(e){vs('idle')}}
+/* image */
+function pick(f){if(!f)return;const url=URL.createObjectURL(f),img=new Image();img.onload=()=>{const c=document.createElement('canvas');c.width=c.height=48;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(img,0,0,48,48);const d=x.getImageData(0,0,48,48).data,b={};let L=0;
+for(let i=0;i<d.length;i+=4){L+=.2126*d[i]+.7152*d[i+1]+.0722*d[i+2];const k=(d[i]>>5)<<6|(d[i+1]>>5)<<3|d[i+2]>>5,o=b[k]||(b[k]=[0,0,0,0]);o[0]++;o[1]+=d[i];o[2]+=d[i+1];o[3]+=d[i+2]}
+const out=[];Object.values(b).sort((a,z)=>z[0]-a[0]).forEach(o=>{const c=[o[1],o[2],o[3]].map(v=>Math.round(v/o[0]));if(out.length<5&&out.every(p=>Math.hypot(p[0]-c[0],p[1]-c[1],p[2]-c[2])>55))out.push(c)});
+const hex=out.map(c=>'#'+c.map(v=>v.toString(16).padStart(2,'0')).join('')),lum=L/2304,mood=lum>150?t('bright','चमकदार'):lum<70?t('dark','गहरी'):t('balanced','संतुलित'),info=`${img.naturalWidth}×${img.naturalHeight}px · ${Math.max(1,Math.round(f.size/1024))} KB · ${mood}`;
+cur={id:Date.now(),k:'image',title:t('Image palette ','इमेज पैलेट ')+hex[0],m:[],p:hex,info};H.unshift(cur);store();showSw(hex,info,url)};img.onerror=()=>note(t('Couldn’t read that image.','यह इमेज नहीं खुली।'));img.src=url}
+function showSw(hex,info,url){go('img');$('#ires').innerHTML=(url?`<img class="pv" src="${url}" alt="Your photo">`:'')+`<p style="margin:0;font-weight:600">${t('Main colours','मुख्य रंग')}</p><p class="empty" style="padding:2px 0">${esc(info)}</p><div class="sws">${hex.map(h=>`<button style="background:${h};color:${parseInt(h.slice(1,3),16)*.3+parseInt(h.slice(3,5),16)*.6+parseInt(h.slice(5),16)*.1>140?'#000':'#fff'}" data-c="${h}" aria-label="Copy ${h}">${h}</button>`).join('')}</div><p class="empty">${t('Tap a colour to copy it.','रंग कॉपी करने के लिए उस पर दबाएँ।')}</p>`;$('#dz').style.display='none'}
+$('#ires').addEventListener('click',e=>{const b=e.target.closest('[data-c]');if(b)(navigator.clipboard?navigator.clipboard.writeText(b.dataset.c):Promise.reject()).then(()=>note(t('Copied ','कॉपी किया ')+b.dataset.c),()=>note(b.dataset.c))});
+function openImg(){$('#ires').innerHTML='';$('#dz').style.display='';go('img')}
+/* 3D glass orb */
+const rgba=(h,a)=>{const n=parseInt(h.slice(1),16);return`rgba(${n>>16},${n>>8&255},${n&255},${a})`};
+function orb(c,now){const d=devicePixelRatio||1,w=c.clientWidth;if(!w)return;if(c.width!==Math.round(w*d))c.width=c.height=Math.round(w*d);const x=c.getContext('2d');x.setTransform(d,0,0,d,0,0);x.clearRect(0,0,w,w);
+const k=RM?0:now/1000,m=w/2,r=w*.31*(1+.06*lvl),wb=.03+.07*lvl,rg=(px,py,q,s)=>{const g=x.createRadialGradient(px,py,0,px,py,q);s.forEach((z,i)=>g.addColorStop(i/(s.length-1),z));return g};
+x.fillStyle=rg(m,m,r*1.9,[rgba('#8a7bff',.22+.2*lvl),rgba('#8a7bff',0)]);x.beginPath();x.arc(m,m,r*1.9,0,7);x.fill();
+x.save();x.beginPath();for(let i=0;i<=120;i++){const a=i/120*6.2832,q=r*(1+wb*(.6*Math.sin(3*a+k*1.3)+.4*Math.sin(5*a-k)));x[i?'lineTo':'moveTo'](m+q*Math.cos(a),m+q*Math.sin(a))}x.closePath();x.clip();
+x.fillStyle='#06060c';x.fillRect(0,0,w,w);x.globalCompositeOperation='lighter';
+[['#2f6bff',0],['#9b5cff',2.1],['#ff5fa8',4.2],['#2bd9ff',1]].forEach((l,i)=>{const a=k*(.55+i*.17)*(i%2?-1:1)+l[1]+tilt.x*.9,px=m+r*.55*Math.cos(a),py=m+r*.55*Math.sin(a)+tilt.y*r*.25;x.fillStyle=rg(px,py,r*1.05,[rgba(l[0],.95),rgba(l[0],0)]);x.fillRect(0,0,w,w)});
+x.globalCompositeOperation='source-over';x.fillStyle=rg(m,m,r*1.05,[ 'rgba(0,0,0,0)','rgba(0,0,0,0)','rgba(0,0,0,.6)']);x.fillRect(0,0,w,w);
+x.fillStyle=rg(m-r*.38+tilt.x*r*.12,m-r*.42+tilt.y*r*.1,r*.6,['rgba(255,255,255,.7)','rgba(255,255,255,0)']);x.fillRect(0,0,w,w);x.restore();
+const g=x.createLinearGradient(m-r,m-r,m+r,m+r);g.addColorStop(0,'rgba(255,255,255,.65)');g.addColorStop(.5,'rgba(255,255,255,.05)');g.addColorStop(1,'rgba(255,255,255,.35)');x.strokeStyle=g;x.lineWidth=1.5;x.beginPath();x.arc(m,m,r*1.01,0,7);x.stroke()}
+function loop(now){lvl+=((state==='speak'?tgt+.3*Math.abs(Math.sin(now/130)):state==='listen'?tgt+.25*Math.abs(Math.sin(now/210)*Math.sin(now/90)):tgt)-lvl)*.12;if(screen==='sp')orb($('#o1'),now);if(screen==='voice')orb($('#o2'),now);requestAnimationFrame(loop)}
+addEventListener('pointermove',e=>{const r=document.body.getBoundingClientRect();tilt.x=(e.clientX/innerWidth-.5)*2;tilt.y=(e.clientY/innerHeight-.5)*2;if(screen==='sp'&&!RM){const w=$('#wd').style;w.setProperty('--ry',(-16+tilt.x*16)+'deg');w.setProperty('--rx',(10-tilt.y*10)+'deg')}});
+sync();chips();drawH();requestAnimationFrame(loop);
+</script>
+</body>
+</html>
