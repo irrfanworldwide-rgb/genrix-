@@ -1,5 +1,7 @@
 package app.genrix.android.ui
 
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.background
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -87,8 +89,9 @@ private fun Content(
         }
         return
     }
+    Box(Modifier.fillMaxSize().background(Background).nebula()) {
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = Color.Transparent,
         bottomBar = {
             NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainer, tonalElevation = 0.dp) {
                 Tab.entries.forEach {
@@ -139,5 +142,6 @@ private fun Content(
             }
             }
         }
+    }
     }
 }

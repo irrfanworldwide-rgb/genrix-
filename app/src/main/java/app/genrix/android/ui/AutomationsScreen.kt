@@ -1,5 +1,9 @@
 package app.genrix.android.ui
 
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
@@ -90,10 +94,18 @@ fun AutomationsScreen() {
     ) {
         ScreenHeader("Automations", "Say \"${WakeWordModel.PHRASE}\", then the command. English, Hindi and Hinglish.")
         SearchField(query) { query = it }
-        Routines(query)
-        Group("On this phone", "Works without internet and doesn't use your Gemini key.", Accent, "Local", LOCAL, query, mono = true, startOpen = true)
-        Group("Tasks with your OK", "Gemini plans them; you finish anything that sends, calls or pays.", Warning, "Approval", TASKS, query, mono = false)
-        Group("With Gemini", "Needs internet; uses your Gemini key.", AccentAlt, "AI", CLOUD, query, mono = false)
+        var filter by rememberSaveable { mutableStateOf("All") }
+        ChipRow(listOf("All", "Local", "AI", "Approval"), filter) { filter = it }
+        if (filter == "All") Routines(query)
+        if (filter == "All" || filter == "Local") {
+            Group("On this phone", "Works without internet and doesn't use your Gemini key.", Accent, "Local", LOCAL, query, mono = true, startOpen = true, icon = Icons.Filled.Phone)
+        }
+        if (filter == "All" || filter == "Approval") {
+            Group("Tasks with your OK", "Gemini plans them; you finish anything that sends, calls or pays.", Warning, "Approval", TASKS, query, mono = false, icon = Icons.Filled.CheckCircle)
+        }
+        if (filter == "All" || filter == "AI") {
+            Group("With Gemini", "Needs internet; uses your Gemini key.", AccentAlt, "AI", CLOUD, query, mono = false, icon = Icons.Filled.Star)
+        }
         Spacer(Modifier.height(8.dp))
     }
 }
@@ -175,6 +187,7 @@ private fun Group(
     query: String,
     mono: Boolean,
     startOpen: Boolean = false,
+    icon: ImageVector? = null,
 ) {
     var open by rememberSaveable(title) { mutableStateOf(startOpen) }
     val q = query.trim()
@@ -191,6 +204,10 @@ private fun Group(
                 .padding(vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            if (icon != null) {
+                IconTile(icon)
+                Spacer(Modifier.width(12.dp))
+            }
             Column(Modifier.weight(1f)) {
                 Text(title, style = MaterialTheme.typography.titleLarge)
                 Text(detail, style = MaterialTheme.typography.bodySmall, color = Muted, modifier = Modifier.padding(top = 2.dp))

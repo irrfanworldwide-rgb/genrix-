@@ -1,5 +1,26 @@
 package app.genrix.android.ui
 
+import app.genrix.android.Branding
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -53,7 +74,7 @@ fun Section(title: String?, modifier: Modifier = Modifier, content: @Composable 
             Modifier
                 .fillMaxWidth()
                 .background(Surface, MaterialTheme.shapes.medium)
-                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, MaterialTheme.shapes.medium)
+                .border(1.dp, glowBrush(), MaterialTheme.shapes.medium)
                 .padding(horizontal = 16.dp, vertical = 6.dp),
             content = content,
         )
@@ -64,6 +85,7 @@ fun Section(title: String?, modifier: Modifier = Modifier, content: @Composable 
 @Composable
 fun SwitchRow(title: String, detail: String, checked: Boolean, enabled: Boolean = true, onChange: (Boolean) -> Unit) {
     Row(Modifier.fillMaxWidth().padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+        rowIcon(title)?.let { IconTile(it, size = 38.dp); Spacer(Modifier.width(12.dp)) }
         Column(Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.titleMedium)
             Text(detail, style = MaterialTheme.typography.bodySmall, color = Muted, modifier = Modifier.padding(top = 2.dp))
@@ -77,6 +99,7 @@ fun SwitchRow(title: String, detail: String, checked: Boolean, enabled: Boolean 
 @Composable
 fun InfoRow(title: String, detail: String, trailing: @Composable (() -> Unit)? = null) {
     Row(Modifier.fillMaxWidth().padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+        rowIcon(title)?.let { IconTile(it, size = 38.dp); Spacer(Modifier.width(12.dp)) }
         Column(Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.titleMedium)
             Text(detail, style = MaterialTheme.typography.bodySmall, color = Muted, modifier = Modifier.padding(top = 2.dp))
@@ -166,4 +189,72 @@ fun Modifier.pressScale(onClick: () -> Unit): Modifier {
         label = "press",
     )
     return this.scale(factor).clickable(interactionSource = source, indication = null, role = Role.Button, onClick = onClick)
+}
+
+/** The soft cyan to violet edge used on glass surfaces. */
+@Composable
+fun glowBrush(): Brush = Brush.linearGradient(listOf(Accent.copy(alpha = 0.45f), AccentAlt.copy(alpha = 0.28f), Accent.copy(alpha = 0.10f)))
+
+/** A rounded icon on a faint cyan/violet gradient. */
+@Composable
+fun IconTile(icon: ImageVector, modifier: Modifier = Modifier, size: Dp = 40.dp) {
+    val shape = RoundedCornerShape(12.dp)
+    Box(
+        modifier
+            .size(size)
+            .background(Brush.linearGradient(listOf(Accent.copy(alpha = 0.24f), AccentAlt.copy(alpha = 0.24f))), shape)
+            .border(1.dp, Accent.copy(alpha = 0.35f), shape),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(icon, contentDescription = null, tint = Accent, modifier = Modifier.size(size * 0.5f))
+    }
+}
+
+private fun rowIcon(title: String): ImageVector? {
+    val t = title.lowercase()
+    return when {
+        "key" in t -> Icons.Filled.Lock
+        "assistant" in t -> Icons.Filled.Home
+        "talk" in t -> Icons.Filled.Call
+        "wave" in t -> Icons.Filled.Face
+        "orb" in t || "any app" in t -> Icons.Filled.Star
+        "control" in t || "on this phone" in t -> Icons.Filled.Build
+        "wake" in t || "notif" in t -> Icons.Filled.Notifications
+        "speech" in t -> Icons.Filled.Search
+        "learn" in t || "knows" in t -> Icons.Filled.Person
+        "background" in t || "standby" in t -> Icons.Filled.Refresh
+        "gemini" in t -> Icons.Filled.Star
+        t == Branding.ASSISTANT_NAME.lowercase() -> Icons.Filled.Info
+        else -> null
+    }
+}
+
+/** Soft violet and blue light in the corners behind everything (dark mode only). */
+@Composable
+fun Modifier.nebula(): Modifier {
+    if (!isSystemInDarkTheme()) return this
+    return this.drawBehind {
+        drawRect(Brush.radialGradient(listOf(GenrixColors.Violet.copy(alpha = 0.22f), Color.Transparent), Offset(size.width * 0.95f, size.height * 0.05f), size.width))
+        drawRect(Brush.radialGradient(listOf(GenrixColors.Glow.copy(alpha = 0.20f), Color.Transparent), Offset(size.width * 0.05f, size.height * 0.95f), size.width * 1.1f))
+    }
+}
+
+/** A row of pill filters; the selected one is filled with the accent colour. */
+@Composable
+fun ChipRow(options: List<String>, selected: String, onSelect: (String) -> Unit, modifier: Modifier = Modifier) {
+    Row(modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        options.forEach { option ->
+            val on = option == selected
+            Text(
+                option,
+                style = MaterialTheme.typography.labelLarge,
+                color = if (on) MaterialTheme.colorScheme.onPrimary else Muted,
+                modifier = Modifier
+                    .background(if (on) Accent else Surface, RoundedCornerShape(50))
+                    .border(1.dp, if (on) Color.Transparent else MaterialTheme.colorScheme.outline, RoundedCornerShape(50))
+                    .pressScale { onSelect(option) }
+                    .padding(horizontal = 18.dp, vertical = 9.dp),
+            )
+        }
+    }
 }

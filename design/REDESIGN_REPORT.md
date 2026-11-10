@@ -22,3 +22,14 @@ Every callback, setting, permission flow, routine, local command, PC bridge, not
 - The app has no "executing" or "error" phase of its own. The orb derives them from existing state: a local command running, and a startup problem while idle.
 - Activity entries carry no success or failure flag, so none is shown.
 - Not checked on a device: layouts on small screens, animation performance, reduced-motion behaviour.
+
+## Round 2: matched to the storyboard (`design/storyboard-reference.png`)
+Done: centred gradient GENRIX wordmark with NEURAL ASSISTANT; the AI core now has planet-style orbit rings and a "G" mark; a STANDBY / LISTENING / EXECUTING / SPEAKING status pill; quick actions with drawn Torch, Battery, Time and Pause icons; mic button with a glow; glass cards with a cyan-to-violet edge; soft violet and blue "nebula" light behind every screen; filter chips and icon tiles on Automations (All / Local / AI / Approval) and Activity (All / On phone / Gemini); icon tiles on Settings rows and a Genrix card at the top.
+
+Deliberately not done, because the app has no such feature or data (nothing was faked):
+- "Pro" and "Premium Edition" badges, and "Explore 100+ Commands".
+- Success check marks on Activity rows (entries carry no success flag) and the storyboard's All / Commands / System / Other categories (replaced by On phone / Gemini, which the data supports).
+- The raised mic button inside the bottom bar (navigation was left as is).
+- The Permissions, Command Result and Voice States sheets as separate screens. Onboarding keeps its existing flow and picks up the new theme.
+
+Still not built or run anywhere: push to GitHub and read the "Build APK" result.

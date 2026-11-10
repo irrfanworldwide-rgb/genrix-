@@ -1,5 +1,15 @@
 package app.genrix.android.ui
 
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.foundation.Canvas
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -121,15 +131,22 @@ fun HomeScreen(
     val problem = state.problem != null && !now.live
 
     Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
-        Row(Modifier.fillMaxWidth().padding(top = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.weight(1f)) {
-                Text(
-                    Branding.ASSISTANT_NAME.uppercase(),
-                    style = MaterialTheme.typography.titleLarge.copy(fontFamily = GenrixFonts.Mono, letterSpacing = 5.sp),
-                )
-                Text(Branding.DESCRIPTOR, style = MaterialTheme.typography.labelMedium, color = MutedDim)
-            }
+        Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Spacer(Modifier.weight(1f))
             Pill(now.badge, if (now.live) Accent else Muted)
+        }
+        Column(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                Branding.ASSISTANT_NAME.uppercase(),
+                style = TextStyle(
+                    brush = Brush.linearGradient(listOf(MaterialTheme.colorScheme.onBackground, Accent)),
+                    fontFamily = GenrixFonts.Ui,
+                    fontSize = 34.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 6.sp,
+                ),
+            )
+            Text(Branding.DESCRIPTOR, style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 5.sp), color = Muted)
         }
 
         // The AI core is the hero; it takes whatever room is left, up to a comfortable size.
@@ -140,6 +157,7 @@ fun HomeScreen(
                 level = level,
                 executing = localPhase == LocalPhase.Doing,
                 error = problem,
+                rings = true,
                 modifier = Modifier
                     .size(coreSize)
                     .semantics { contentDescription = "${Branding.ASSISTANT_NAME}: ${now.title}" }
@@ -151,27 +169,46 @@ fun HomeScreen(
                         }
                     },
             )
+            Text(
+                "G",
+                style = TextStyle(
+                    brush = Brush.linearGradient(listOf(Accent, AccentAlt)),
+                    fontFamily = GenrixFonts.Ui,
+                    fontSize = (coreSize.value * 0.2f).sp,
+                    fontWeight = FontWeight.Bold,
+                ),
+            )
         }
 
-        AnimatedContent(
-            now.title.uppercase(),
-            transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(120)) },
-            label = "status",
-        ) { title ->
-            Text(
-                title,
-                style = MaterialTheme.typography.displaySmall,
-                color = if (now.live) Accent else MaterialTheme.colorScheme.onBackground,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(),
-            )
+        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            AnimatedContent(
+                now.title.uppercase(),
+                transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(120)) },
+                label = "status",
+            ) { title ->
+                Row(
+                    Modifier
+                        .background(Surface, RoundedCornerShape(50))
+                        .border(1.dp, glowBrush(), RoundedCornerShape(50))
+                        .padding(horizontal = 18.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Box(Modifier.size(8.dp).background(if (now.live) Accent else Positive, CircleShape))
+                    Text(
+                        title,
+                        style = MaterialTheme.typography.labelLarge.copy(fontFamily = GenrixFonts.Mono, letterSpacing = 3.sp, fontWeight = FontWeight.SemiBold),
+                        color = if (now.live) Accent else MaterialTheme.colorScheme.onBackground,
+                    )
+                }
+            }
         }
         Text(
             now.hint,
             style = MaterialTheme.typography.bodyMedium,
             color = if (problem) Warning else Muted,
             textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth().padding(top = 4.dp, bottom = 16.dp),
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 16.dp),
         )
 
         // The task in progress, or one that just finished (2 minutes).
@@ -205,7 +242,13 @@ private fun MicButton(live: Boolean, onClick: () -> Unit) {
     } else {
         0f
     }
-    Box(Modifier.size(96.dp), contentAlignment = Alignment.Center) {
+    val glow = Accent
+    Box(
+        Modifier.size(96.dp).drawBehind {
+            drawCircle(Brush.radialGradient(listOf(glow.copy(alpha = 0.30f), Color.Transparent), center, size.minDimension * 0.95f), radius = size.minDimension * 0.95f)
+        },
+        contentAlignment = Alignment.Center,
+    ) {
         if (live) {
             Box(Modifier.size(76.dp + 20.dp * pulse).alpha(0.5f * (1f - pulse)).border(1.5.dp, Accent, CircleShape))
         } else {
@@ -255,12 +298,15 @@ private fun QuickActions(onQuick: (LocalCommand) -> String, favourites: List<Loc
                     Modifier
                         .weight(1f)
                         .background(Surface, shape)
-                        .border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape)
+                        .border(1.dp, glowBrush(), shape)
                         .pressScale { answer = onQuick(command()) }
-                        .padding(vertical = 16.dp),
+                        .padding(vertical = 14.dp),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(label, style = MaterialTheme.typography.labelLarge, maxLines = 1)
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        ToolIcon(label)
+                        Text(label, style = MaterialTheme.typography.labelMedium, maxLines = 1)
+                    }
                 }
             }
         }
@@ -312,3 +358,36 @@ private fun Conversation(lines: List<Line>, modifier: Modifier) {
 }
 
 private const val TASK_SHOWN_MS = 2 * 60_000L
+
+/** Small line icons for the quick actions (drawn, so no extra icon library is needed). */
+@Composable
+private fun ToolIcon(label: String) {
+    val tint = Accent
+    val key = label.lowercase()
+    Canvas(Modifier.size(24.dp)) {
+        val w = size.width
+        val line = Stroke(width = 2f * density, cap = StrokeCap.Round)
+        when {
+            "torch" in key -> {
+                drawRoundRect(tint, Offset(w * 0.32f, w * 0.06f), Size(w * 0.36f, w * 0.22f), CornerRadius(3f * density), style = line)
+                drawRoundRect(tint, Offset(w * 0.38f, w * 0.28f), Size(w * 0.24f, w * 0.62f), CornerRadius(3f * density), style = line)
+                drawLine(tint, Offset(w * 0.5f, w * 0.42f), Offset(w * 0.5f, w * 0.54f), strokeWidth = 2f * density, cap = StrokeCap.Round)
+            }
+            "battery" in key -> {
+                drawRoundRect(tint, Offset(w * 0.06f, w * 0.28f), Size(w * 0.76f, w * 0.44f), CornerRadius(4f * density), style = line)
+                drawRoundRect(tint, Offset(w * 0.14f, w * 0.36f), Size(w * 0.4f, w * 0.28f), CornerRadius(2f * density))
+                drawLine(tint, Offset(w * 0.9f, w * 0.42f), Offset(w * 0.9f, w * 0.58f), strokeWidth = 2.5f * density, cap = StrokeCap.Round)
+            }
+            "time" in key -> {
+                drawCircle(tint, radius = w * 0.42f, center = center, style = line)
+                drawLine(tint, center, Offset(center.x, w * 0.24f), strokeWidth = 2f * density, cap = StrokeCap.Round)
+                drawLine(tint, center, Offset(w * 0.7f, center.y + w * 0.08f), strokeWidth = 2f * density, cap = StrokeCap.Round)
+            }
+            "pause" in key -> {
+                drawRoundRect(tint, Offset(w * 0.26f, w * 0.2f), Size(w * 0.16f, w * 0.6f), CornerRadius(2f * density))
+                drawRoundRect(tint, Offset(w * 0.58f, w * 0.2f), Size(w * 0.16f, w * 0.6f), CornerRadius(2f * density))
+            }
+            else -> drawCircle(tint, radius = w * 0.12f, center = center)
+        }
+    }
+}

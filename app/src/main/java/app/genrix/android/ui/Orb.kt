@@ -60,6 +60,7 @@ fun Orb(
     executing: Boolean = false,
     error: Boolean = false,
     idleMotion: Boolean = true,
+    rings: Boolean = false,
 ) {
     val dark = isSystemInDarkTheme()
     val context = LocalContext.current
@@ -181,6 +182,16 @@ fun Orb(
             }
         }
 
+        // Planet-style orbit rings, back half (drawn before the core).
+        if (rings) {
+            rotate(-18f + 3f * sin(a), c) {
+                val rw = base * 3.0f
+                val rh = base * 0.95f
+                drawArc(cyan.copy(alpha = 0.55f + 0.3f * e), 180f, 180f, false, Offset(c.x - rw / 2f, c.y - rh / 2f), Size(rw, rh), style = Stroke(2f * density))
+                drawArc(violet.copy(alpha = 0.40f + 0.2f * e), 180f, 180f, false, Offset(c.x - rw * 0.58f, c.y - rh * 0.62f), Size(rw * 1.16f, rh * 1.24f), style = Stroke(1.4f * density))
+            }
+        }
+
         // The core: an organic blob filled with drifting coloured light.
         path.rewind()
         val steps = 120
@@ -233,6 +244,15 @@ fun Orb(
             ),
             style = Stroke(1.5f * density),
         )
+        // Front half of the orbit rings, over the core.
+        if (rings) {
+            rotate(-18f + 3f * sin(a), c) {
+                val rw = base * 3.0f
+                val rh = base * 0.95f
+                drawArc(cyan.copy(alpha = 0.55f + 0.3f * e), 0f, 180f, false, Offset(c.x - rw / 2f, c.y - rh / 2f), Size(rw, rh), style = Stroke(2f * density))
+                drawArc(violet.copy(alpha = 0.40f + 0.2f * e), 0f, 180f, false, Offset(c.x - rw * 0.58f, c.y - rh * 0.62f), Size(rw * 1.16f, rh * 1.24f), style = Stroke(1.4f * density))
+            }
+        }
         // One burst when a command starts.
         if (b < 1f) {
             drawCircle(

@@ -1,5 +1,11 @@
 package app.genrix.android.ui
 
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -35,6 +41,7 @@ import java.util.Locale
 /** What the assistant did recently, newest first; kept in memory only. */
 @Composable
 fun ActivityScreen(entries: List<ActivityLog.Entry>, onClear: () -> Unit) {
+    var filter by rememberSaveable { mutableStateOf("All") }
     Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
         ScreenHeader("Activity", "What was done, not what was said. Cleared when the app closes.") {
             if (entries.isNotEmpty()) TextButton(onClick = onClear) { Text("Clear") }
@@ -44,13 +51,25 @@ fun ActivityScreen(entries: List<ActivityLog.Entry>, onClear: () -> Unit) {
             EmptyActivity()
             return
         }
+        ChipRow(listOf("All", "On phone", "Gemini"), filter) { filter = it }
+        Spacer(Modifier.height(12.dp))
+        val shown = entries.filter {
+            when (filter) {
+                "On phone" -> it.local
+                "Gemini" -> !it.local
+                else -> true
+            }
+        }
+        if (shown.isEmpty()) {
+            Text("Nothing here for this filter.", style = MaterialTheme.typography.bodySmall, color = Muted, modifier = Modifier.padding(start = 4.dp))
+        }
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(entries, key = { it.at.toString() + it.what }) { entry ->
+            items(shown, key = { it.at.toString() + it.what }) { entry ->
                 Box(
                     Modifier
                         .fillMaxWidth()
                         .background(Surface, MaterialTheme.shapes.medium)
-                        .border(1.dp, MaterialTheme.colorScheme.outlineVariant, MaterialTheme.shapes.medium),
+                        .border(1.dp, glowBrush(), MaterialTheme.shapes.medium),
                 ) { ActivityRow(entry) }
             }
         }
@@ -77,7 +96,7 @@ private fun EmptyActivity() {
 @Composable
 fun ActivityRow(entry: ActivityLog.Entry) {
     Row(Modifier.fillMaxWidth().padding(vertical = 10.dp, horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.size(8.dp).background(if (entry.local) Accent else AccentAlt, CircleShape))
+        IconTile(if (entry.local) Icons.Filled.Phone else Icons.Filled.Star, size = 38.dp)
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Text(entry.what, style = MaterialTheme.typography.titleMedium)

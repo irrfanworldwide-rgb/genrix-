@@ -1,5 +1,18 @@
 package app.genrix.android.ui
 
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.border
+import androidx.compose.foundation.background
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
@@ -52,6 +65,22 @@ fun SettingsScreen(assistant: AssistantViewModel) {
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         ScreenHeader("Settings", "Voice, floating orb, PC bridge and permissions.")
+        Row(
+            Modifier.fillMaxWidth().background(Surface, MaterialTheme.shapes.large).border(1.dp, glowBrush(), MaterialTheme.shapes.large).padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                Modifier.size(48.dp).background(Brush.linearGradient(listOf(Accent.copy(alpha = 0.3f), AccentAlt.copy(alpha = 0.3f))), RoundedCornerShape(14.dp)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text("G", style = TextStyle(brush = Brush.linearGradient(listOf(Accent, AccentAlt)), fontSize = 26.sp, fontWeight = FontWeight.Bold))
+            }
+            Spacer(Modifier.width(14.dp))
+            Column {
+                Text(Branding.ASSISTANT_NAME, style = MaterialTheme.typography.titleLarge)
+                Text(Branding.DESCRIPTOR, style = MaterialTheme.typography.labelMedium, color = Muted)
+            }
+        }
 
         Section("Gemini") {
             InfoRow("API key", "Your own key, encrypted with Android Keystore on this phone. Used only for requests the phone can't handle. Gemini usage counts against your key's limits.") {
