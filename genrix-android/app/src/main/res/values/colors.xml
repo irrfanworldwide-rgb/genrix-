@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="background">#FFF4F6EE</color>
-    <color name="accent">#FF4A6300</color>
+    <color name="background">#FFF3F6FC</color>
+    <color name="accent">#FF006B8A</color>
     <!-- The launcher icon is always dark, in light and dark mode. -->
-    <color name="ic_background">#FF050505</color>
+    <color name="ic_background">#FF070A12</color>
 </resources>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Genrix – Neural Assistant</title>
+<style>
+:root{--bg:#070A12;--bg2:#000;--nav:#0B1120;--card:#101827;--rs:#151F31;--ln:#1C2638;--ol:#2A3650;--pri:#64D9FF;--onp:#04222B;--pc:#0E3A4A;--opc:#BDEFFF;--vio:#8B7CFF;--glow:#3B82F6;--tx:#F2F6FF;--mu:#9BAAC2;--dim:#66758D;--ok:#55E6A5;--wn:#FFC66D;--dark:1;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:light){:root{--bg:#F3F6FC;--bg2:#E1E8F4;--nav:#fff;--card:#fff;--rs:#E9EFFA;--ln:#E1E8F4;--ol:#C9D3E6;--pri:#006B8A;--onp:#fff;--pc:#C6EEFF;--opc:#001F2B;--vio:#5B4FD6;--tx:#0B1220;--mu:#4A5A73;--dim:#7A879C;--ok:#0E8F5B;--wn:#8A5A00;--dark:0;color-scheme:light}}
+html{height:100%}*{box-sizing:border-box}
+body{margin:0;height:100%;background:var(--bg2);color:var(--tx);font:14px/21px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:grid;place-items:center}
+.mono,.st,.pill,h1.state,.brand,.lbl{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+.phone{width:100%;height:100%;display:flex;flex-direction:column;background:var(--bg);overflow:hidden}
+@media(min-width:481px){.phone{width:400px;height:min(100%,840px);border:1px solid var(--ol);border-radius:34px}}
+#screen{flex:1;min-height:0;overflow-y:auto;padding:0 20px;display:flex;flex-direction:column}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
+button:focus-visible,input:focus-visible,canvas:focus-visible{outline:2px solid var(--pri);outline-offset:2px}
+.top{display:flex;align-items:center;padding-top:12px}.top>div{flex:1}
+.brand{font-size:19px;font-weight:600;letter-spacing:5px;line-height:25px}.lbl{font-size:11px;color:var(--dim);letter-spacing:.5px}
+.pill{font-size:11px;font-weight:500;border:1px solid var(--ol);border-radius:99px;padding:3px 11px;color:var(--mu);white-space:nowrap}.pill.on{color:var(--pri);border-color:var(--pri)}
+.pill.c{color:var(--pri);border-color:var(--pri)}.pill.a{color:var(--wn);border-color:var(--wn)}.pill.v{color:var(--vio);border-color:var(--vio)}
+.hero{flex:1;min-height:150px;display:grid;place-items:center}canvas{width:min(100%,340px);aspect-ratio:1;cursor:pointer;max-height:100%}
+h1.state{font-size:26px;line-height:32px;font-weight:600;letter-spacing:4px;text-align:center;margin:0;transition:color .3s}.state.live{color:var(--pri)}
+.hint{text-align:center;color:var(--mu);margin:4px 0 16px}
+.qa{display:flex;gap:8px}.qa button{flex:1;padding:16px 0;border-radius:18px;background:var(--card);border:1px solid var(--ln);font-weight:500;white-space:nowrap;transition:transform .2s cubic-bezier(.3,1.6,.5,1)}.qa button:active{transform:scale(.96)}
+.ans{font-size:12px;color:var(--mu);margin:8px 4px 0}
+.rh{display:flex;align-items:center;margin-top:16px}.st{flex:1;font-size:11px;font-weight:600;letter-spacing:1.4px;color:var(--mu);text-transform:uppercase;margin:0;display:flex;align-items:center;gap:8px}.st::before{content:"";width:3px;height:12px;border-radius:2px;background:var(--pri)}
+.tb{color:var(--pri);font-weight:500;padding:8px 10px}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:20px;padding:6px 16px;margin-top:8px}
+.ar{display:flex;align-items:center;gap:12px;padding:10px 0}.ar+.ar{border-top:1px solid var(--ln)}.ar .d{width:8px;height:8px;border-radius:50%;flex:none}.ar>div{flex:1;min-width:0}.ar b{display:block;font-weight:500;font-size:16px;line-height:22px}.ar small{color:var(--mu);font-size:12px}.ar .r{text-align:right}.ar .r small{display:block;color:var(--dim);font-family:ui-monospace,Menlo,monospace;font-size:11px;margin-top:4px}
+.conv{flex:1;min-height:80px;overflow-y:auto;display:flex;flex-direction:column;gap:8px}.ln{display:flex}.ln.me{justify-content:flex-end}
+.ln span{padding:10px 14px;border-radius:18px 18px 18px 6px;background:var(--card);border:1px solid var(--ln);max-width:85%}.ln.me span{background:var(--pc);color:var(--opc);border-color:rgba(100,217,255,.35);border-radius:18px 18px 6px 18px}
+.micw{display:grid;place-items:center;padding:12px 0}.mw{width:96px;height:96px;display:grid;place-items:center;position:relative}
+.mw::before{content:"";position:absolute;width:92px;height:92px;border-radius:50%;border:1px solid rgba(100,217,255,.25)}.mw.live::before{width:76px;height:76px;border:1.5px solid var(--pri);animation:pulse 1.6s linear infinite}
+@keyframes pulse{from{transform:scale(1);opacity:.5}to{transform:scale(1.26);opacity:0}}
+.mic{width:72px;height:72px;border-radius:50%;background:var(--pri);color:var(--onp);display:grid;place-items:center;position:relative;transition:transform .2s cubic-bezier(.3,1.6,.5,1)}.mic:active{transform:scale(.94)}.mic.stop{background:var(--rs);color:var(--tx);border:1px solid var(--ol)}.mic svg{width:30px;height:30px}
+h2{font-size:26px;line-height:32px;font-weight:600;letter-spacing:-.3px;margin:12px 0 2px}.sub{color:var(--mu);font-size:12px;margin:0 0 16px}
+.sec{margin-bottom:18px}.ir{display:flex;align-items:center;gap:12px;padding:10px 0}.ir+.ir{border-top:1px solid var(--ln)}.ir>div{flex:1}.ir b{display:block;font-weight:500;font-size:16px;line-height:22px}.ir small{display:block;color:var(--mu);font-size:12px;line-height:17px;margin-top:2px}
+.sw{width:52px;height:32px;border-radius:16px;background:var(--rs);border:2px solid var(--ol);position:relative;flex:none;transition:background .2s}.sw::after{content:"";position:absolute;top:6px;left:6px;width:16px;height:16px;border-radius:50%;background:var(--mu);transition:all .25s cubic-bezier(.3,1.4,.5,1)}
+.sw[aria-checked=true]{background:var(--pri);border-color:transparent}.sw[aria-checked=true]::after{left:26px;top:4px;width:24px;height:24px;background:var(--onp)}
+input{width:100%;margin-top:10px;padding:14px;border-radius:14px;border:1px solid var(--ol);background:transparent;color:var(--tx);font:inherit}input::placeholder{color:var(--dim)}
+.btn{margin-top:12px;padding:12px 24px;border-radius:99px;background:var(--pri);color:var(--onp);font-weight:600}
+.gh{display:flex;align-items:center;gap:8px;padding:12px 0;width:100%;text-align:left}.gh .t{flex:1}.gh b{font-size:19px;font-weight:600;display:block;line-height:25px}.gh small{color:var(--mu);font-size:12px}.gh svg{width:22px;height:22px;stroke:var(--mu);fill:none;stroke-width:2;transition:transform .3s}.gh[aria-expanded=true] svg{transform:rotate(180deg)}
+.body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s}.body.o{grid-template-rows:1fr}.body>div{overflow:hidden}
+.cm{border-top:1px solid var(--ln);padding:10px 0}.cm b{display:block;font-weight:500;font-size:16px}.cm small{display:block;color:var(--mu);font-size:12px;margin-top:4px;line-height:17px}.cm small.m{font-family:ui-monospace,Menlo,monospace}
+.search{display:flex;align-items:center;gap:8px;border:1px solid var(--ol);border-radius:16px;padding:0 14px;margin-bottom:16px}.search input{border:0;margin:0;padding:14px 0}.search svg{width:20px;height:20px;stroke:var(--mu);fill:none;stroke-width:2;flex:none}
+.empty{text-align:center;padding-top:48px}.empty .c{width:56px;height:56px;border-radius:50%;background:var(--rs);display:grid;place-items:center;margin:0 auto 16px}.empty svg{width:24px;height:24px;stroke:var(--mu);fill:none;stroke-width:2}
+nav{display:flex;background:var(--nav);padding:12px 0 14px;flex:none}nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--mu)}nav .lbl{font-size:11px;color:inherit}nav i{width:64px;height:32px;border-radius:16px;display:grid;place-items:center;transition:background .25s}nav svg{width:24px;height:24px;fill:currentColor}nav button[aria-current=true]{color:var(--pri)}nav button[aria-current=true] i{background:var(--pc)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01s!important}}
+</style>
+</head>
+<body>
+<div class="phone"><main id="screen"></main><nav id="nav" aria-label="Main"></nav></div>
+<script>
+const $=s=>document.querySelector(s),RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const P={home:'M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z',auto:'M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z',act:'M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z',set:'M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.61-.22l-2.39.96a7 7 0 0 0-1.62-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96a.5.5 0 0 0-.61.22L2.65 8.84a.5.5 0 0 0 .12.64l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.01 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.12.22.37.3.61.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.26.42.5.42h3.84c.24 0 .45-.18.5-.42l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.49 0 .61-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.01-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z',mic:'M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z',x:'M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z'};
+const svg=p=>`<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${p}"/></svg>`;
+const S={off:['STANDBY','Tap the mic to talk.','Wake word off'],listen:['LISTENING','Talk any time, in English, Hindi or Hinglish.','Gemini'],exec:['EXECUTING','Doing it on this phone.','On phone'],speak:['SPEAKING','Tap the orb to cut in.','Gemini']};
+let tab=0,phase='off',lines=[],torch=false,answer='',Q=[],timers=[],burst=1;
+let acts=[['Open on the PC','Calculator opened.','pc','4:12 pm',1],['Check the weather','Clear, 24°.','g','4:05 pm',0]];
+const T={talk:1,wave:1,orb:0,learn:1},open={0:1};
+const tbtn=(l,f)=>`<button class="tb" onclick="${f}">${l}</button>`;
+const sec=(t,b)=>`<section class="sec"><h3 class="st">${t}</h3><div class="card">${b}</div></section>`;
+const ir=(t,d,x='')=>`<div class="ir"><div><b>${t}</b><small>${d}</small></div>${x}</div>`;
+const swr=(k,t,d)=>ir(t,d,`<button class="sw" role="switch" aria-label="${t}" aria-checked="${!!T[k]}" onclick="T.${k}^=1;render()"></button>`);
+const row=a=>`<div class="ar"><span class="d" style="background:var(${a[4]?'--pri':'--vio'})"></span><div><b>${a[0]}</b><small>${a[1]}</small></div><div class="r"><span class="pill ${a[4]?'c':'v'}">${a[4]?'On phone':'Gemini'}</span><small>${a[3]}</small></div></div>`;
+function home(){const[t,h,b]=S[phase],live=phase!=='off';
+return `<div class="top"><div><div class="brand">GENRIX</div><div class="lbl">NEURAL ASSISTANT</div></div><span class="pill ${live?'on':''}">${b}</span></div>
+<div class="hero"><canvas id="orb" tabindex="0" role="button" aria-label="Genrix: ${t}" onclick="orbTap()"></canvas></div>
+<h1 class="state ${live?'live':''}">${t}</h1><p class="hint">${h}</p>
+${live&&lines.length?`<div class="conv">${lines.map(l=>`<div class="ln ${l[0]?'me':''}"><span>${l[1]}</span></div>`).join('')}</div>`:quick()+recent()}
+<div class="micw"><div class="mw ${live?'live':''}"><button class="mic ${live?'stop':''}" onclick="mic()" aria-label="${live?'Stop':'Talk'}">${svg(live?P.x:P.mic)}</button></div></div>`}
+function quick(){Q=[[torch?'Torch off':'Torch',()=>(torch=!torch)?'Torch on.':'Torch off.'],['Battery',()=>'Battery 82%, not charging.'],['Time',()=>'It’s '+new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})+'.'],['Pause',()=>'Paused.']];
+return `<div class="qa">${Q.map((a,i)=>`<button onclick="qa(${i})">${a[0]}</button>`).join('')}</div>${answer?`<p class="ans">${answer}</p>`:''}`}
+const qa=i=>{answer=Q[i][1]();render()};
+const recent=()=>`<div class="rh"><h3 class="st">Recent</h3>${tbtn('See all','go(2)')}</div>${acts.length?`<div class="card">${acts.slice(0,2).map(row).join('')}</div>`:'<p class="ans">Nothing yet. What you ask shows up here.</p>'}`;
+const G=[['On this phone','Works without internet and doesn’t use your Gemini key.','c','Local',1,[['Volume','“Volume 30 percent kar do” · “volume badhao” · “phone mute karo”'],['Music','“Music pause kar do” · “agla gaana” · “resume”'],['Flashlight','“Flashlight on karo” · “torch band karo”'],['Open apps','“YouTube kholo” · “open Calendar”'],['Timers and alarms','“5 minute ka timer” · “subah 6:30 ka alarm”']]],
+['Tasks with your OK','Gemini plans them; you finish anything that sends, calls or pays.','a','Approval',0,[['WhatsApp message','“WhatsApp Rahul ko bolo main 7 baje aaunga”. You check it and tap Send.'],['Calls','“Call Mom”. Opens the dialer; you tap Call.']]],
+['With Gemini','Needs internet; uses your Gemini key.','v','AI',0,[['Songs','“Play Kesariya on YouTube Music”'],['Questions','Weather, facts, explanations, anything else'],['Reminders','“Remind me to call the bank at 5”']]]];
+let query='';
+function auto(){const q=query.trim().toLowerCase();return `<h2>Automations</h2><p class="sub">Say “Hey Genrix”, then the command. English, Hindi and Hinglish.</p>
+<div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" value="${query.replace(/"/g,'&quot;')}" placeholder="Search commands" aria-label="Search commands" oninput="query=this.value;filt()"></div><div id="groups">${groups()}</div>`}
+function groups(){const q=query.trim().toLowerCase();return G.map((g,i)=>{const sh=g[5].filter(c=>!q||(c[0]+c[1]).toLowerCase().includes(q));if(q&&!sh.length)return'';const ex=open[i]||q;
+return `<section class="sec"><div class="card"><button class="gh" aria-expanded="${!!ex}" onclick="open[${i}]=!open[${i}];$('#groups').innerHTML=groups()"><div class="t"><b>${g[0]}</b><small>${g[1]}</small></div><span class="pill ${g[2]}">${g[3]}</span><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button><div class="body ${ex?'o':''}"><div>${sh.map(c=>`<div class="cm"><b>${c[0]}</b><small class="${i==0?'m':''}">${c[1]}</small></div>`).join('')}</div></div></div></section>`}).join('')}
+const filt=()=>{$('#groups').innerHTML=groups()};
+const activity=()=>`<div style="display:flex;align-items:center"><h2 style="flex:1">Activity</h2>${acts.length?tbtn('Clear','acts=[];render()'):''}</div><p class="sub">What was done, not what was said. Cleared when the app closes.</p>`+(acts.length?acts.map(a=>`<div class="card" style="padding:0 12px;margin:0 0 8px">${row(a)}</div>`).join(''):`<div class="empty"><div class="c"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></div><b style="font-size:16px">Nothing yet</b><p class="sub" style="margin-top:4px">Commands you run show up here, newest first.</p></div>`);
+const settings=()=>`<h2>Settings</h2><p class="sub">Voice, floating orb, PC bridge and permissions.</p>`
++sec('Gemini',ir('API key','Your own key, encrypted with Android Keystore on this phone.',tbtn('Replace',''))+ir('Default assistant','Long-press Home or swipe from a corner to talk.',tbtn('Open','')))
++sec('Conversation',swr('talk','Talk over Genrix','Speak while it answers to cut it off, also on the loudspeaker.')+swr('wave','Wave to interrupt','Wave a hand over the top of the phone while Genrix speaks.'))
++sec('PC bridge',`<div class="ir" style="display:block"><small style="margin:0">Run pc-helper/genrix_pc.py on your computer and enter the address and token it prints. Power actions ask for your Allow tap.</small><input id="pcu" placeholder="PC address, e.g. http://192.168.1.20:8765" inputmode="url" aria-label="PC address"><input id="pct" type="password" placeholder="Token" aria-label="Token"><button class="btn" onclick="pcSave()">Save and test</button><p id="pcm" role="status" style="font-size:12px;margin:8px 0 0"></p></div>`)
++sec('Floating orb',swr('orb','Use Genrix over any app','A small orb floats over your apps. Tap to talk, double-tap to type.'))
++sec('Learning',swr('learn','Learn from how I use Genrix','Kept only on this phone: which commands you use and when.'))
++sec('About',ir('Genrix','Version 0.1.0 · Neural Assistant'));
+function pcSave(){const u=$('#pcu').value.trim(),m=$('#pcm'),ok=/^http:\/\/(localhost|[\w-]+\.local|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)(:\d+)?\/?$/.test(u);m.style.color=ok?'var(--tx)':'var(--wn)';if(!ok){m.textContent='Use a home-network address like http://192.168.1.20:8765 (http, not the internet).';return}m.textContent='Checking the PC…';setTimeout(()=>m.textContent='Connected: DESKTOP-GENRIX (Windows 11) is on, battery 91% charging',900)}
+function render(){const k=[...document.querySelectorAll('#screen input')].map(i=>i.value),f=document.activeElement&&document.activeElement.id;$('#screen').innerHTML=[home,auto,activity,settings][tab]();document.querySelectorAll('#screen input').forEach((i,n)=>{if(k[n]!=null&&tab===3)i.value=k[n]});if(tab===1&&f==='q'){const e=$('#q');e.focus();e.setSelectionRange(e.value.length,e.value.length)}
+$('#nav').innerHTML=[['Home','home'],['Automations','auto'],['Activity','act'],['Settings','set']].map((x,i)=>`<button onclick="go(${i})" ${tab==i?'aria-current="true"':''}><i>${svg(P[x[1]])}</i><span class="lbl">${x[0]}</span></button>`).join('')}
+const go=i=>{tab=i;render()},set=p=>{phase=p;render()},clr=()=>{timers.forEach(clearTimeout);timers=[]},q=(ms,f)=>timers.push(setTimeout(f,ms));
+function stop(){clr();phase='off';lines=[];render()}
+function mic(){clr();if(phase!=='off')return stop();set('listen');
+q(1800,()=>{lines.push([1,'PC pe calculator kholo']);burst=0;set('exec')});
+q(3000,()=>{lines.push([0,'Calculator khul gaya, PC par.']);acts.unshift(['Open on the PC','Calculator opened.','pc','now',1]);set('speak')});
+q(5600,()=>{set('listen')})}
+function orbTap(){if(phase==='off')mic();else if(phase==='speak'){clr();set('listen')}}
+const mix=(a,b,t)=>a.map((v,i)=>v+(b[i]-v)*t),rgb=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)),C=(c,a)=>`rgba(${c[0]|0},${c[1]|0},${c[2]|0},${a})`;
+let en=0,vo=0;const CY=rgb('#64D9FF'),VI=rgb('#8B7CFF'),GL=rgb('#3B82F6'),WR=rgb('#FFC66D');
+function draw(now){const c=$('#orb');if(!c)return;const d=devicePixelRatio||1,w=c.clientWidth;if(!w)return;if(c.width!==Math.round(w*d))c.width=c.height=Math.round(w*d);
+const x=c.getContext('2d');x.setTransform(d,0,0,d,0,0);x.clearRect(0,0,w,w);
+en+=({off:0,exec:.3,listen:.5,speak:.9}[phase]-en)*.06;
+const rv=RM||phase==='off'||phase==='exec'?0:(.5+.5*Math.sin(now/170)*Math.sin(now/533))*(phase==='speak'?.9:.5);vo+=(rv-vo)*.1;
+const t=RM?0:(now%12000)/12000,br=RM?.5:.5+.5*Math.sin(now/5000*Math.PI*2*.5),a=t*2*Math.PI,m=w/2,b=w/2*.52*(1+.06*vo+.025*br),wb=.025+.05*en+.1*vo;
+const spin={off:0,listen:1,speak:2,exec:6}[phase],dark=getComputedStyle(document.documentElement).getPropertyValue('--dark').trim()==='1';
+const rg=(px,py,r,s)=>{const g=x.createRadialGradient(px,py,0,px,py,r);s.forEach((z,i)=>g.addColorStop(i/(s.length-1),z));return g};
+x.fillStyle=rg(m,m,b*2.1,[C(GL,.16+.2*en+.22*vo+.04*br),C(GL,0)]);x.beginPath();x.arc(m,m,b*2.1,0,7);x.fill();
+x.lineWidth=1.2;x.strokeStyle=C(CY,.1+.1*en);x.beginPath();x.arc(m,m,b*1.28,0,7);x.stroke();x.strokeStyle=C(VI,.07+.07*en);x.beginPath();x.arc(m,m,b*1.46,0,7);x.stroke();
+x.lineCap='round';x.lineWidth=2;x.strokeStyle=C(CY,.25+.65*en);x.beginPath();x.arc(m,m,b*1.28,a*(1+spin),a*(1+spin)+1.22);x.stroke();
+x.lineWidth=1.6;x.strokeStyle=C(VI,.2+.55*en);x.beginPath();x.arc(m,m,b*1.46,Math.PI-a*(1+(spin/2|0)),Math.PI-a*(1+(spin/2|0))+.7);x.stroke();
+if(phase!=='off'||en>.05)for(let i=0;i<8;i++){const ang=a*(i%2?-1:1)*(1+i%3)+i*Math.PI/4,rr=b*(1.55+.12*Math.sin(a*2+i));x.fillStyle=C(CY,(.15+.5*en)*(.5+.5*Math.sin(a*3+i)));x.beginPath();x.arc(m+rr*Math.cos(ang),m+rr*Math.sin(ang),1.2+(i%3)*.5,0,7);x.fill()}
+x.save();x.beginPath();for(let i=0;i<=120;i++){const th=i/120*2*Math.PI,r=b*(1+wb*(.55*Math.sin(3*th+3*a)+.3*Math.sin(5*th-2*a)+.15*Math.sin(2*th+5*a)));x[i?'lineTo':'moveTo'](m+r*Math.cos(th),m+r*Math.sin(th))}x.closePath();x.clip();
+x.fillStyle=rg(m,m,b*1.15,['#12203A','#070A12']);x.fillRect(0,0,w,w);
+[CY,VI,GL].forEach((col,i)=>{const an=a*(i+1)*(i%2?-1:1)+i*2.1;x.fillStyle=rg(m+b*.45*Math.cos(an),m+b*.45*Math.sin(an),b*.95,[C(col,.9),C(col,0)]);x.fillRect(0,0,w,w)});
+x.strokeStyle=`rgba(255,255,255,${.1+.12*en})`;x.lineWidth=1;x.beginPath();x.arc(m,m,b*(.55+.08*Math.sin(a*3)),0,7);x.stroke();
+x.fillStyle=rg(m-b*.38,m-b*.42,b*.6,[`rgba(255,255,255,${dark?.28:.5})`,'rgba(255,255,255,0)']);x.fillRect(0,0,w,w);x.restore();
+const g=x.createLinearGradient(m-b,m-b,m+b,m+b);g.addColorStop(0,C(CY,.85));g.addColorStop(.5,C(CY,0));g.addColorStop(1,C(VI,.7));x.strokeStyle=g;x.lineWidth=1.5;x.beginPath();x.arc(m,m,b*1.01,0,7);x.stroke();
+if(burst<1){burst=Math.min(1,burst+.025);x.strokeStyle=C(CY,.7*(1-burst));x.lineWidth=3-2*burst;x.beginPath();x.arc(m,m,b*(1.05+.8*burst),0,7);x.stroke()}}
+const loop=n=>{draw(n);requestAnimationFrame(loop)};render();requestAnimationFrame(loop);
+</script>
+</body>
+</html>

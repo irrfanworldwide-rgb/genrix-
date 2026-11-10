@@ -51,7 +51,7 @@ fun SettingsScreen(assistant: AssistantViewModel) {
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
-        Text("Settings", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = 12.dp))
+        ScreenHeader("Settings", "Voice, floating orb, PC bridge and permissions.")
 
         Section("Gemini") {
             InfoRow("API key", "Your own key, encrypted with Android Keystore on this phone. Used only for requests the phone can't handle. Gemini usage counts against your key's limits.") {

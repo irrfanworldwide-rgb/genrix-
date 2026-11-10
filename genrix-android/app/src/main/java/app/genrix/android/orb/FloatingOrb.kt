@@ -88,7 +88,7 @@ object FloatingOrb {
                             )
                         },
                 ) {
-                    Orb(state.phase, Modifier.fillMaxSize(), level)
+                    Orb(state.phase, Modifier.fillMaxSize(), level, idleMotion = false)
                 }
             }
         }

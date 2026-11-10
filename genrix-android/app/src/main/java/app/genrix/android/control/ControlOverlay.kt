@@ -80,9 +80,9 @@ class ControlOverlay(private val service: AccessibilityService) {
                 orientation = LinearLayout.VERTICAL
                 setPadding(PAD, PAD, PAD, PAD)
                 background = GradientDrawable().apply {
-                    setColor(Color.rgb(10, 10, 10))
+                    setColor(Color.rgb(11, 17, 32))
                     cornerRadius = 36f
-                    setStroke(3, Color.rgb(198, 244, 50))
+                    setStroke(3, Color.rgb(100, 217, 255))
                 }
                 addView(text("${Branding.ASSISTANT_NAME} wants to:", 13f))
                 addView(text(what, 17f))
@@ -123,9 +123,9 @@ class ControlOverlay(private val service: AccessibilityService) {
                 orientation = LinearLayout.VERTICAL
                 setPadding(PAD, PAD / 2, PAD, PAD / 2)
                 background = GradientDrawable().apply {
-                    setColor(Color.rgb(10, 10, 10))
+                    setColor(Color.rgb(11, 17, 32))
                     cornerRadius = 36f
-                    setStroke(3, Color.rgb(255, 180, 84))
+                    setStroke(3, Color.rgb(255, 198, 109))
                 }
                 addView(text("Your turn — ${Branding.ASSISTANT_NAME} waits:", 13f))
                 addView(text(what, 16f))

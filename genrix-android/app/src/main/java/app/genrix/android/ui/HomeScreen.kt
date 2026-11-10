@@ -5,12 +5,21 @@ import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,12 +31,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -40,10 +48,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import app.genrix.android.Branding
 import app.genrix.android.assistant.Line
@@ -62,7 +73,7 @@ private data class Status(val title: String, val hint: String, val badge: String
 
 private fun status(state: UiState, local: LocalPhase, wakeOn: Boolean): Status = when {
     local == LocalPhase.Listening -> Status("Listening", "Say a command. Simple ones run on this phone.", "On phone", Phase.Listening, true)
-    local == LocalPhase.Doing -> Status("Working", "Doing it on this phone.", "On phone", Phase.Connecting, true)
+    local == LocalPhase.Doing -> Status("Executing", "Doing it on this phone.", "On phone", Phase.Connecting, true)
     local == LocalPhase.Speaking -> Status("Speaking", "Answered on this phone.", "On phone", Phase.Speaking, true)
     state.phase == Phase.Connecting -> Status("Thinking", "Connecting to Gemini…", "Gemini", Phase.Connecting, true)
     state.phase == Phase.Listening -> Status("Listening", "Talk any time, in English, Hindi or Hinglish.", "Gemini", Phase.Listening, true)
@@ -111,16 +122,26 @@ fun HomeScreen(
 
     Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
         Row(Modifier.fillMaxWidth().padding(top = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(Branding.ASSISTANT_NAME, style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
+            Column(Modifier.weight(1f)) {
+                Text(
+                    Branding.ASSISTANT_NAME.uppercase(),
+                    style = MaterialTheme.typography.titleLarge.copy(fontFamily = GenrixFonts.Mono, letterSpacing = 5.sp),
+                )
+                Text(Branding.DESCRIPTOR, style = MaterialTheme.typography.labelMedium, color = MutedDim)
+            }
             Pill(now.badge, if (now.live) Accent else Muted)
         }
 
-        Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
+        // The AI core is the hero; it takes whatever room is left, up to a comfortable size.
+        BoxWithConstraints(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
+            val coreSize = minOf(maxWidth, maxHeight, 340.dp)
             Orb(
                 phase = now.orb,
                 level = level,
+                executing = localPhase == LocalPhase.Doing,
+                error = problem,
                 modifier = Modifier
-                    .size(220.dp)
+                    .size(coreSize)
                     .semantics { contentDescription = "${Branding.ASSISTANT_NAME}: ${now.title}" }
                     .clickable(remember { MutableInteractionSource() }, indication = null) {
                         when (state.phase) {
@@ -132,13 +153,24 @@ fun HomeScreen(
             )
         }
 
-        AnimatedContent(now.title, label = "status") { title ->
-            Text(title, style = MaterialTheme.typography.displaySmall, modifier = Modifier.fillMaxWidth())
+        AnimatedContent(
+            now.title.uppercase(),
+            transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(120)) },
+            label = "status",
+        ) { title ->
+            Text(
+                title,
+                style = MaterialTheme.typography.displaySmall,
+                color = if (now.live) Accent else MaterialTheme.colorScheme.onBackground,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
         Text(
             now.hint,
             style = MaterialTheme.typography.bodyMedium,
             color = if (problem) Warning else Muted,
+            textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth().padding(top = 4.dp, bottom = 16.dp),
         )
 
@@ -154,19 +186,46 @@ fun HomeScreen(
             Recent(activity.take(2), onSeeActivity)
         }
 
-        Box(Modifier.fillMaxWidth().padding(vertical = 16.dp), contentAlignment = Alignment.Center) {
-            val live = now.live
-            FilledIconButton(
-                onClick = { if (live) onStop() else startListening() },
-                modifier = Modifier.size(72.dp),
-                colors = if (live) {
-                    IconButtonDefaults.filledIconButtonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant, contentColor = MaterialTheme.colorScheme.onSurface)
-                } else {
-                    IconButtonDefaults.filledIconButtonColors()
-                },
-            ) {
-                Icon(if (live) Icons.Filled.Close else MicIcon, contentDescription = if (live) "Stop" else "Talk", modifier = Modifier.size(30.dp))
-            }
+        Box(Modifier.fillMaxWidth().padding(vertical = 12.dp), contentAlignment = Alignment.Center) {
+            MicButton(live = now.live, onClick = { if (now.live) onStop() else startListening() })
+        }
+    }
+}
+
+/** The main voice control: a cyan disc with a quiet ring, and a pulsing ring while live. */
+@Composable
+private fun MicButton(live: Boolean, onClick: () -> Unit) {
+    val pulse = if (live) {
+        rememberInfiniteTransition(label = "mic").animateFloat(
+            initialValue = 0f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(tween(1600, easing = LinearEasing)),
+            label = "pulse",
+        ).value
+    } else {
+        0f
+    }
+    Box(Modifier.size(96.dp), contentAlignment = Alignment.Center) {
+        if (live) {
+            Box(Modifier.size(76.dp + 20.dp * pulse).alpha(0.5f * (1f - pulse)).border(1.5.dp, Accent, CircleShape))
+        } else {
+            Box(Modifier.size(92.dp).border(1.dp, Accent.copy(alpha = 0.25f), CircleShape))
+        }
+        Box(
+            Modifier
+                .size(72.dp)
+                .background(if (live) Raised else Accent, CircleShape)
+                .border(1.dp, if (live) MaterialTheme.colorScheme.outline else Color.Transparent, CircleShape)
+                .pressScale(onClick)
+                .semantics { contentDescription = if (live) "Stop" else "Talk" },
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                if (live) Icons.Filled.Close else MicIcon,
+                contentDescription = null,
+                tint = if (live) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.size(30.dp),
+            )
         }
     }
 }
@@ -190,25 +249,18 @@ private fun QuickActions(onQuick: (LocalCommand) -> String, favourites: List<Loc
     val actions = (learned + defaults.filter { d -> learned.none { it.first.startsWith(d.first, ignoreCase = true) } }).take(4)
     Column {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-            val tints = listOf(Color(0xFFC6F432), Color(0xFFB8A1FF), Color(0xFFFFB6D5))
-            actions.forEachIndexed { i, (label, command) ->
-                val tint = tints.getOrNull(i)
+            actions.forEach { (label, command) ->
                 val shape = RoundedCornerShape(18.dp)
                 Box(
                     Modifier
                         .weight(1f)
-                        .background(tint ?: Surface, shape)
-                        .then(if (tint == null) Modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape) else Modifier)
-                        .clickable { answer = onQuick(command()) }
-                        .padding(vertical = 18.dp),
+                        .background(Surface, shape)
+                        .border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape)
+                        .pressScale { answer = onQuick(command()) }
+                        .padding(vertical = 16.dp),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(
-                        label,
-                        style = MaterialTheme.typography.labelLarge,
-                        maxLines = 1,
-                        color = if (tint != null) Color(0xFF0B0B0B) else MaterialTheme.colorScheme.onSurface,
-                    )
+                    Text(label, style = MaterialTheme.typography.labelLarge, maxLines = 1)
                 }
             }
         }
@@ -219,13 +271,15 @@ private fun QuickActions(onQuick: (LocalCommand) -> String, favourites: List<Loc
 @Composable
 private fun Recent(entries: List<ActivityLog.Entry>, onSeeAll: () -> Unit) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Text("RECENT", style = MaterialTheme.typography.titleSmall, color = Muted, modifier = Modifier.weight(1f).padding(start = 4.dp))
+        Box(Modifier.padding(start = 4.dp).size(3.dp, 12.dp).background(Accent, RoundedCornerShape(2.dp)))
+        Text("RECENT", style = MaterialTheme.typography.titleSmall, color = Muted, modifier = Modifier.weight(1f).padding(start = 8.dp))
         TextButton(onClick = onSeeAll) { Text("See all") }
     }
     if (entries.isEmpty()) {
         Text("Nothing yet. What you ask shows up here.", style = MaterialTheme.typography.bodySmall, color = Muted, modifier = Modifier.padding(start = 4.dp))
+    } else {
+        Section(null) { entries.forEach { ActivityRow(it) } }
     }
-    entries.forEach { ActivityRow(it) }
 }
 
 @Composable
@@ -237,13 +291,20 @@ private fun Conversation(lines: List<Line>, modifier: Modifier) {
     LazyColumn(modifier, state = list, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         items(lines, key = { it.id }) { line ->
             Box(Modifier.fillMaxWidth(), contentAlignment = if (line.fromUser) Alignment.CenterEnd else Alignment.CenterStart) {
+                val shape = RoundedCornerShape(
+                    topStart = 18.dp,
+                    topEnd = 18.dp,
+                    bottomStart = if (line.fromUser) 18.dp else 6.dp,
+                    bottomEnd = if (line.fromUser) 6.dp else 18.dp,
+                )
                 Text(
                     line.text,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = if (line.fromUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                    color = if (line.fromUser) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier
-                        .background(if (line.fromUser) Accent else Surface, RoundedCornerShape(16.dp))
-                        .padding(horizontal = 14.dp, vertical = 9.dp),
+                        .background(if (line.fromUser) MaterialTheme.colorScheme.primaryContainer else Surface, shape)
+                        .border(1.dp, if (line.fromUser) Accent.copy(alpha = 0.35f) else MaterialTheme.colorScheme.outlineVariant, shape)
+                        .padding(horizontal = 14.dp, vertical = 10.dp),
                 )
             }
         }

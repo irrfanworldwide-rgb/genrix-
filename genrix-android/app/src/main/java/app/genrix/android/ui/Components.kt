@@ -2,6 +2,9 @@ package app.genrix.android.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,8 +19,17 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchColors
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,12 +43,11 @@ import androidx.compose.ui.unit.dp
 fun Section(title: String?, modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
     Column(modifier.fillMaxWidth()) {
         if (title != null) {
-            Text(
-                title.uppercase(),
-                style = MaterialTheme.typography.titleSmall,
-                color = Muted,
-                modifier = Modifier.padding(start = 4.dp, bottom = 8.dp),
-            )
+            Row(Modifier.padding(start = 4.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.size(3.dp, 12.dp).background(Accent, RoundedCornerShape(2.dp)))
+                Spacer(Modifier.width(8.dp))
+                Text(title.uppercase(), style = MaterialTheme.typography.titleSmall, color = Muted)
+            }
         }
         Column(
             Modifier
@@ -58,7 +69,7 @@ fun SwitchRow(title: String, detail: String, checked: Boolean, enabled: Boolean 
             Text(detail, style = MaterialTheme.typography.bodySmall, color = Muted, modifier = Modifier.padding(top = 2.dp))
         }
         Spacer(Modifier.width(12.dp))
-        Switch(checked = checked, enabled = enabled, onCheckedChange = onChange)
+        Switch(checked = checked, enabled = enabled, onCheckedChange = onChange, colors = genrixSwitchColors())
     }
 }
 
@@ -117,4 +128,42 @@ val MicIcon: ImageVector by lazy {
             close()
         }
     }.build()
+}
+
+/** The app's switch: cyan when on, quiet and bordered when off. */
+@Composable
+fun genrixSwitchColors(): SwitchColors = SwitchDefaults.colors(
+    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+    checkedTrackColor = Accent,
+    checkedBorderColor = Color.Transparent,
+    uncheckedThumbColor = Muted,
+    uncheckedTrackColor = Raised,
+    uncheckedBorderColor = MaterialTheme.colorScheme.outline,
+)
+
+/** A screen's title, an optional one-line description and an optional control on the right. */
+@Composable
+fun ScreenHeader(title: String, subtitle: String? = null, modifier: Modifier = Modifier, trailing: @Composable (() -> Unit)? = null) {
+    Row(modifier.fillMaxWidth().padding(top = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.headlineSmall)
+            if (subtitle != null) {
+                Text(subtitle, style = MaterialTheme.typography.bodySmall, color = Muted, modifier = Modifier.padding(top = 4.dp))
+            }
+        }
+        if (trailing != null) trailing()
+    }
+}
+
+/** Clickable with a soft spring "press" instead of a ripple, for cards and buttons. */
+@Composable
+fun Modifier.pressScale(onClick: () -> Unit): Modifier {
+    val source = remember { MutableInteractionSource() }
+    val pressed by source.collectIsPressedAsState()
+    val factor by animateFloatAsState(
+        if (pressed) 0.96f else 1f,
+        spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium),
+        label = "press",
+    )
+    return this.scale(factor).clickable(interactionSource = source, indication = null, role = Role.Button, onClick = onClick)
 }

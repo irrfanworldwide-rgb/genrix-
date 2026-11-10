@@ -1,14 +1,19 @@
 package app.genrix.android.ui
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -36,7 +41,7 @@ import app.genrix.android.task.Task
 
 private enum class Tab(val label: String, val icon: ImageVector) {
     Home("Home", Icons.Filled.Home),
-    Automations("Automations", Icons.Filled.Star),
+    Automations("Automations", Icons.Filled.Build),
     Activity("Activity", Icons.Filled.List),
     Settings("Settings", Icons.Filled.Settings),
 }
@@ -91,15 +96,27 @@ private fun Content(
                         selected = tab == it.ordinal,
                         onClick = { setTab(it.ordinal) },
                         icon = { Icon(it.icon, contentDescription = null) },
-                        label = { Text(it.label) },
-                        colors = NavigationBarItemDefaults.colors(indicatorColor = MaterialTheme.colorScheme.primaryContainer),
+                        label = { Text(it.label, style = MaterialTheme.typography.labelMedium, maxLines = 1) },
+                        alwaysShowLabel = true,
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = Accent,
+                            selectedTextColor = Accent,
+                            indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                            unselectedIconColor = Muted,
+                            unselectedTextColor = Muted,
+                        ),
                     )
                 }
             }
         },
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding)) {
-            when (Tab.entries[tab]) {
+            AnimatedContent(
+                targetState = tab,
+                transitionSpec = { fadeIn(tween(240)) togetherWith fadeOut(tween(120)) },
+                label = "tab",
+            ) { current ->
+            when (Tab.entries[current]) {
                 Tab.Home -> HomeScreen(
                     state = state,
                     localPhase = localPhase,
@@ -119,6 +136,7 @@ private fun Content(
                 Tab.Automations -> AutomationsScreen()
                 Tab.Activity -> ActivityScreen(activity, assistant::clearActivity)
                 Tab.Settings -> SettingsScreen(assistant)
+            }
             }
         }
     }
