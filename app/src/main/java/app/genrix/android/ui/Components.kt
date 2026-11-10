@@ -241,7 +241,7 @@ fun Modifier.nebula(): Modifier {
 
 /** A row of pill filters; the selected one is filled with the accent colour. */
 @Composable
-fun ChipRow(options: List<String>, selected: String, onSelect: (String) -> Unit, modifier: Modifier = Modifier) {
+fun ChipRow(options: List<String>, selected: String, modifier: Modifier = Modifier, onSelect: (String) -> Unit) {
     Row(modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         options.forEach { option ->
             val on = option == selected
