@@ -319,16 +319,24 @@ fun ChipRow(options: List<String>, selected: String, modifier: Modifier = Modifi
 fun Waveform(level: Float, active: Boolean, modifier: Modifier = Modifier) {
     val cyan = Accent
     val violet = AccentAlt
-    val time = if (active) {
-        rememberInfiniteTransition(label = "wave").animateFloat(
-            initialValue = 0f,
-            targetValue = 1f,
-            animationSpec = infiniteRepeatable(tween(1400, easing = LinearEasing)),
-            label = "phase",
-        )
-    } else {
-        null
-    }
+   
+val infiniteTransition = rememberInfiniteTransition(label = "wave")
+val time: State<Float> = if (active) {
+    infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = 1400,
+                easing = LinearEasing
+            ),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "phase"
+    )
+} else {
+    remember { mutableFloatStateOf(0f) }
+}
     Canvas(modifier) {
         val bars = 30
         val step = size.width / bars
