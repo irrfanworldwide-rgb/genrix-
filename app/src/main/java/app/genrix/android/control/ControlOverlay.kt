@@ -80,9 +80,9 @@ class ControlOverlay(private val service: AccessibilityService) {
                 orientation = LinearLayout.VERTICAL
                 setPadding(PAD, PAD, PAD, PAD)
                 background = GradientDrawable().apply {
-                    setColor(Color.rgb(11, 17, 32))
+                    setColor(Color.rgb(8, 13, 27))
                     cornerRadius = 36f
-                    setStroke(3, Color.rgb(100, 217, 255))
+                    setStroke(3, Color.rgb(0, 217, 255))
                 }
                 addView(text("${Branding.ASSISTANT_NAME} wants to:", 13f))
                 addView(text(what, 17f))
@@ -123,7 +123,7 @@ class ControlOverlay(private val service: AccessibilityService) {
                 orientation = LinearLayout.VERTICAL
                 setPadding(PAD, PAD / 2, PAD, PAD / 2)
                 background = GradientDrawable().apply {
-                    setColor(Color.rgb(11, 17, 32))
+                    setColor(Color.rgb(8, 13, 27))
                     cornerRadius = 36f
                     setStroke(3, Color.rgb(255, 198, 109))
                 }

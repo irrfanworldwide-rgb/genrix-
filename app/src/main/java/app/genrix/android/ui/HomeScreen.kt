@@ -1,5 +1,13 @@
 package app.genrix.android.ui
 
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.Path
+import kotlinx.coroutines.delay
+import java.util.Locale
+import java.util.Date
+import java.text.SimpleDateFormat
+import android.os.BatteryManager
+import android.content.Context
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -90,7 +98,7 @@ private fun status(state: UiState, local: LocalPhase, wakeOn: Boolean): Status =
     state.phase == Phase.Speaking -> Status("Speaking", "Tap the orb to cut in.", "Gemini", Phase.Speaking, true)
     else -> Status(
         "Standby",
-        state.problem ?: if (wakeOn) "Say \"${WakeWordModel.PHRASE}\", or tap the mic." else "Tap the mic to talk.",
+        state.problem ?: if (wakeOn) "Say \"${WakeWordModel.PHRASE}\", or tap the mic." else "Tap to talk or say “Hey Genrix”",
         if (wakeOn) "Wake word on" else "Wake word off",
         Phase.Off,
         false,
@@ -113,6 +121,7 @@ fun HomeScreen(
     onQuick: (LocalCommand) -> String,
     onSeeActivity: () -> Unit,
     favourites: List<LocalCommand> = emptyList(),
+    onMenu: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val askMic = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -132,21 +141,47 @@ fun HomeScreen(
 
     Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
         Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            Spacer(Modifier.weight(1f))
-            Pill(now.badge, if (now.live) Accent else Muted)
-        }
-        Column(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                Branding.ASSISTANT_NAME.uppercase(),
-                style = TextStyle(
-                    brush = Brush.linearGradient(listOf(MaterialTheme.colorScheme.onBackground, Accent)),
-                    fontFamily = GenrixFonts.Ui,
-                    fontSize = 34.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 6.sp,
-                ),
-            )
-            Text(Branding.DESCRIPTOR, style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 5.sp), color = Muted)
+            val tint = Accent
+            Box(
+                Modifier
+                    .size(46.dp)
+                    .background(Surface, RoundedCornerShape(14.dp))
+                    .border(1.dp, glowBrush(), RoundedCornerShape(14.dp))
+                    .pressScale(onMenu)
+                    .semantics { contentDescription = "Menu" },
+                contentAlignment = Alignment.Center,
+            ) {
+                Canvas(Modifier.size(22.dp)) {
+                    val line = 2.2f * density
+                    drawLine(tint, Offset(size.width * 0.1f, size.height * 0.28f), Offset(size.width * 0.9f, size.height * 0.28f), strokeWidth = line, cap = StrokeCap.Round)
+                    drawLine(tint, Offset(size.width * 0.1f, size.height * 0.5f), Offset(size.width * 0.9f, size.height * 0.5f), strokeWidth = line, cap = StrokeCap.Round)
+                    drawLine(tint, Offset(size.width * 0.1f, size.height * 0.72f), Offset(size.width * 0.6f, size.height * 0.72f), strokeWidth = line, cap = StrokeCap.Round)
+                }
+            }
+            Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    Branding.ASSISTANT_NAME.uppercase(),
+                    style = TextStyle(
+                        brush = Brush.linearGradient(listOf(MaterialTheme.colorScheme.onBackground, Accent)),
+                        fontFamily = GenrixFonts.Ui,
+                        fontSize = 38.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 3.sp,
+                    ),
+                )
+                Text(Branding.DESCRIPTOR, style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 5.sp), color = Muted)
+            }
+            Row(
+                Modifier
+                    .background(Positive.copy(alpha = 0.12f), RoundedCornerShape(50))
+                    .border(1.dp, Positive.copy(alpha = 0.5f), RoundedCornerShape(50))
+                    .padding(horizontal = 12.dp, vertical = 5.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Box(Modifier.size(8.dp).background(Positive, CircleShape))
+                Text("Online", style = MaterialTheme.typography.labelLarge, color = Positive)
+            }
         }
 
         // The AI core is the hero; it takes whatever room is left, up to a comfortable size.
@@ -172,44 +207,46 @@ fun HomeScreen(
             Text(
                 "G",
                 style = TextStyle(
-                    brush = Brush.linearGradient(listOf(Accent, AccentAlt)),
+                    brush = Brush.linearGradient(listOf(Color(0xFF00E8FF), Color(0xFF2A8BFF), Color(0xFF8B5CFF))),
                     fontFamily = GenrixFonts.Ui,
-                    fontSize = (coreSize.value * 0.2f).sp,
-                    fontWeight = FontWeight.Bold,
+                    fontSize = (coreSize.value * 0.24f).sp,
+                    fontWeight = FontWeight.ExtraBold,
                 ),
             )
         }
 
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-            AnimatedContent(
-                now.title.uppercase(),
-                transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(120)) },
-                label = "status",
-            ) { title ->
-                Row(
-                    Modifier
-                        .background(Surface, RoundedCornerShape(50))
-                        .border(1.dp, glowBrush(), RoundedCornerShape(50))
-                        .padding(horizontal = 18.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Box(Modifier.size(8.dp).background(if (now.live) Accent else Positive, CircleShape))
-                    Text(
-                        title,
-                        style = MaterialTheme.typography.labelLarge.copy(fontFamily = GenrixFonts.Mono, letterSpacing = 3.sp, fontWeight = FontWeight.SemiBold),
-                        color = if (now.live) Accent else MaterialTheme.colorScheme.onBackground,
-                    )
+            Column(
+                Modifier
+                    .background(Surface, RoundedCornerShape(26.dp))
+                    .border(1.dp, glowBrush(), RoundedCornerShape(26.dp))
+                    .padding(horizontal = 26.dp, vertical = 10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                AnimatedContent(
+                    now.title.uppercase(),
+                    transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(120)) },
+                    label = "status",
+                ) { title ->
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        MiniWave()
+                        Text(
+                            title,
+                            style = MaterialTheme.typography.displaySmall.copy(fontSize = 19.sp, letterSpacing = 2.sp),
+                            color = if (now.live) Accent else MaterialTheme.colorScheme.onBackground,
+                        )
+                    }
                 }
+                Text(
+                    now.hint,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (problem) Warning else MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(top = 2.dp),
+                )
             }
         }
-        Text(
-            now.hint,
-            style = MaterialTheme.typography.bodyMedium,
-            color = if (problem) Warning else Muted,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 16.dp),
-        )
+        Spacer(Modifier.height(12.dp))
 
         // The task in progress, or one that just finished (2 minutes).
         val recentTask = task?.takeIf { now.live || System.currentTimeMillis() - it.at < TASK_SHOWN_MS }
@@ -217,6 +254,8 @@ fun HomeScreen(
 
         if (state.phase != Phase.Off && state.lines.isNotEmpty()) {
             Conversation(state.lines, Modifier.fillMaxWidth().weight(1f))
+        } else if (state.phase == Phase.Listening || state.phase == Phase.Speaking) {
+            Waveform(level, active = true, modifier = Modifier.fillMaxWidth().height(56.dp))
         } else {
             QuickActions(onQuick, favourites)
             Spacer(Modifier.height(16.dp))
@@ -229,7 +268,7 @@ fun HomeScreen(
     }
 }
 
-/** The main voice control: a cyan disc with a quiet ring, and a pulsing ring while live. */
+/** The main voice control: a glowing glass disc with rings and two curved lines under it. */
 @Composable
 private fun MicButton(live: Boolean, onClick: () -> Unit) {
     val pulse = if (live) {
@@ -242,32 +281,60 @@ private fun MicButton(live: Boolean, onClick: () -> Unit) {
     } else {
         0f
     }
-    val glow = Accent
-    Box(
-        Modifier.size(96.dp).drawBehind {
-            drawCircle(Brush.radialGradient(listOf(glow.copy(alpha = 0.30f), Color.Transparent), center, size.minDimension * 0.95f), radius = size.minDimension * 0.95f)
-        },
-        contentAlignment = Alignment.Center,
-    ) {
-        if (live) {
-            Box(Modifier.size(76.dp + 20.dp * pulse).alpha(0.5f * (1f - pulse)).border(1.5.dp, Accent, CircleShape))
-        } else {
-            Box(Modifier.size(92.dp).border(1.dp, Accent.copy(alpha = 0.25f), CircleShape))
+    val accent = Accent
+    val blue = GenrixColors.Glow
+    Box(Modifier.fillMaxWidth().height(110.dp), contentAlignment = Alignment.Center) {
+        Canvas(Modifier.matchParentSize()) {
+            val p1 = Path().apply {
+                moveTo(0f, size.height * 0.92f)
+                quadraticBezierTo(size.width / 2f, size.height * 0.15f, size.width, size.height * 0.92f)
+            }
+            drawPath(p1, accent.copy(alpha = 0.35f), style = Stroke(1.5f * density))
+            val p2 = Path().apply {
+                moveTo(size.width * 0.12f, size.height)
+                quadraticBezierTo(size.width / 2f, size.height * 0.30f, size.width * 0.88f, size.height)
+            }
+            drawPath(p2, blue.copy(alpha = 0.40f), style = Stroke(1.5f * density))
         }
         Box(
+            Modifier.size(150.dp).drawBehind {
+                drawCircle(Brush.radialGradient(listOf(accent.copy(alpha = 0.28f), Color.Transparent), center, size.minDimension / 2f), radius = size.minDimension / 2f)
+            },
+        )
+        if (live) {
+            Box(Modifier.size(96.dp + 28.dp * pulse).alpha(0.7f * (1f - pulse)).border(1.5.dp, accent, CircleShape))
+        }
+        Box(Modifier.size(108.dp).border(1.dp, accent.copy(alpha = 0.22f), CircleShape))
+        Box(Modifier.size(96.dp).border(1.5.dp, accent.copy(alpha = 0.5f), CircleShape))
+        Box(
             Modifier
-                .size(72.dp)
-                .background(if (live) Raised else Accent, CircleShape)
-                .border(1.dp, if (live) MaterialTheme.colorScheme.outline else Color.Transparent, CircleShape)
+                .size(84.dp)
+                .background(Brush.radialGradient(listOf(Color(0xFF0A2A52), Color(0xFF04102A))), CircleShape)
+                .border(2.dp, accent, CircleShape)
                 .pressScale(onClick)
                 .semantics { contentDescription = if (live) "Stop" else "Talk" },
             contentAlignment = Alignment.Center,
         ) {
-            Icon(
-                if (live) Icons.Filled.Close else MicIcon,
-                contentDescription = null,
-                tint = if (live) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.size(30.dp),
+            Icon(if (live) Icons.Filled.Close else MicIcon, contentDescription = null, tint = accent, modifier = Modifier.size(32.dp))
+        }
+    }
+}
+
+/** Seven small bars, the voice icon on the status pill. */
+@Composable
+private fun MiniWave() {
+    val a = Accent
+    val b = GenrixColors.Glow
+    Canvas(Modifier.size(width = 28.dp, height = 22.dp)) {
+        val heights = floatArrayOf(0.30f, 0.60f, 1f, 0.70f, 1f, 0.60f, 0.30f)
+        val step = size.width / heights.size
+        heights.forEachIndexed { i, h ->
+            drawLine(
+                if (i % 2 == 0) a else b,
+                Offset(step * (i + 0.5f), size.height * (0.5f - h / 2f)),
+                Offset(step * (i + 0.5f), size.height * (0.5f + h / 2f)),
+                strokeWidth = 2.5f * density,
+                cap = StrokeCap.Round,
             )
         }
     }
@@ -276,6 +343,20 @@ private fun MicButton(live: Boolean, onClick: () -> Unit) {
 /** One-tap phone actions; they run here, with no network. */
 @Composable
 private fun QuickActions(onQuick: (LocalCommand) -> String, favourites: List<LocalCommand>) {
+    val context = LocalContext.current
+    var tick by remember { mutableStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            tick = System.currentTimeMillis()
+            delay(30_000)
+        }
+    }
+    val clockText = remember(tick) { SimpleDateFormat("h:mm a", Locale.ENGLISH).format(Date(tick)) }
+    val battery = remember(tick) {
+        (context.getSystemService(Context.BATTERY_SERVICE) as? BatteryManager)
+            ?.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+            ?.takeIf { it in 0..100 }
+    }
     var torchOn by remember { mutableStateOf(false) }
     var answer by remember { mutableStateOf<String?>(null) }
     // Learned favourites first, topped up with the defaults.
@@ -293,7 +374,7 @@ private fun QuickActions(onQuick: (LocalCommand) -> String, favourites: List<Loc
     Column {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
             actions.forEach { (label, command) ->
-                val shape = RoundedCornerShape(18.dp)
+                val shape = RoundedCornerShape(22.dp)
                 Box(
                     Modifier
                         .weight(1f)
@@ -306,6 +387,9 @@ private fun QuickActions(onQuick: (LocalCommand) -> String, favourites: List<Loc
                     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         ToolIcon(label)
                         Text(label, style = MaterialTheme.typography.labelMedium, maxLines = 1)
+                        val key = label.lowercase()
+                        val sub = if ("battery" in key) battery?.let { "$it%" } else if ("time" in key) clockText else null
+                        if (sub != null) Text(sub, style = MaterialTheme.typography.labelMedium, color = Muted, maxLines = 1)
                     }
                 }
             }
@@ -316,15 +400,25 @@ private fun QuickActions(onQuick: (LocalCommand) -> String, favourites: List<Loc
 
 @Composable
 private fun Recent(entries: List<ActivityLog.Entry>, onSeeAll: () -> Unit) {
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.padding(start = 4.dp).size(3.dp, 12.dp).background(Accent, RoundedCornerShape(2.dp)))
-        Text("RECENT", style = MaterialTheme.typography.titleSmall, color = Muted, modifier = Modifier.weight(1f).padding(start = 8.dp))
-        TextButton(onClick = onSeeAll) { Text("See all") }
-    }
-    if (entries.isEmpty()) {
-        Text("Nothing yet. What you ask shows up here.", style = MaterialTheme.typography.bodySmall, color = Muted, modifier = Modifier.padding(start = 4.dp))
-    } else {
-        Section(null) { entries.forEach { ActivityRow(it) } }
+    val shape = RoundedCornerShape(22.dp)
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(top = 12.dp)
+            .background(Surface, shape)
+            .border(1.dp, glowBrush(), shape)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            MiniWave()
+            Text("Recent Activity", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f).padding(start = 10.dp))
+            Text("See all →", style = MaterialTheme.typography.labelLarge, color = Accent, modifier = Modifier.pressScale(onSeeAll).padding(8.dp))
+        }
+        if (entries.isEmpty()) {
+            Text("Nothing yet. What you ask shows up here.", style = MaterialTheme.typography.bodySmall, color = Muted, modifier = Modifier.padding(top = 8.dp))
+        } else {
+            entries.forEach { ActivityRow(it) }
+        }
     }
 }
 
@@ -359,24 +453,32 @@ private fun Conversation(lines: List<Line>, modifier: Modifier) {
 
 private const val TASK_SHOWN_MS = 2 * 60_000L
 
-/** Small line icons for the quick actions (drawn, so no extra icon library is needed). */
+/** Line icons for the quick actions (drawn, so no extra icon library is needed). */
 @Composable
 private fun ToolIcon(label: String) {
     val tint = Accent
+    val green = GenrixColors.Success
     val key = label.lowercase()
-    Canvas(Modifier.size(24.dp)) {
+    Canvas(Modifier.size(30.dp)) {
         val w = size.width
-        val line = Stroke(width = 2f * density, cap = StrokeCap.Round)
+        val line = Stroke(width = 2f * density, cap = StrokeCap.Round, join = StrokeJoin.Round)
         when {
             "torch" in key -> {
-                drawRoundRect(tint, Offset(w * 0.32f, w * 0.06f), Size(w * 0.36f, w * 0.22f), CornerRadius(3f * density), style = line)
-                drawRoundRect(tint, Offset(w * 0.38f, w * 0.28f), Size(w * 0.24f, w * 0.62f), CornerRadius(3f * density), style = line)
-                drawLine(tint, Offset(w * 0.5f, w * 0.42f), Offset(w * 0.5f, w * 0.54f), strokeWidth = 2f * density, cap = StrokeCap.Round)
+                val bolt = Path().apply {
+                    moveTo(w * 0.56f, w * 0.06f)
+                    lineTo(w * 0.18f, w * 0.56f)
+                    lineTo(w * 0.46f, w * 0.56f)
+                    lineTo(w * 0.42f, w * 0.94f)
+                    lineTo(w * 0.82f, w * 0.40f)
+                    lineTo(w * 0.54f, w * 0.40f)
+                    close()
+                }
+                drawPath(bolt, tint, style = line)
             }
             "battery" in key -> {
-                drawRoundRect(tint, Offset(w * 0.06f, w * 0.28f), Size(w * 0.76f, w * 0.44f), CornerRadius(4f * density), style = line)
-                drawRoundRect(tint, Offset(w * 0.14f, w * 0.36f), Size(w * 0.4f, w * 0.28f), CornerRadius(2f * density))
-                drawLine(tint, Offset(w * 0.9f, w * 0.42f), Offset(w * 0.9f, w * 0.58f), strokeWidth = 2.5f * density, cap = StrokeCap.Round)
+                drawRoundRect(green, Offset(w * 0.06f, w * 0.28f), Size(w * 0.76f, w * 0.44f), CornerRadius(4f * density), style = line)
+                drawRoundRect(green, Offset(w * 0.14f, w * 0.36f), Size(w * 0.46f, w * 0.28f), CornerRadius(2f * density))
+                drawLine(green, Offset(w * 0.9f, w * 0.42f), Offset(w * 0.9f, w * 0.58f), strokeWidth = 2.5f * density, cap = StrokeCap.Round)
             }
             "time" in key -> {
                 drawCircle(tint, radius = w * 0.42f, center = center, style = line)
@@ -384,8 +486,9 @@ private fun ToolIcon(label: String) {
                 drawLine(tint, center, Offset(w * 0.7f, center.y + w * 0.08f), strokeWidth = 2f * density, cap = StrokeCap.Round)
             }
             "pause" in key -> {
-                drawRoundRect(tint, Offset(w * 0.26f, w * 0.2f), Size(w * 0.16f, w * 0.6f), CornerRadius(2f * density))
-                drawRoundRect(tint, Offset(w * 0.58f, w * 0.2f), Size(w * 0.16f, w * 0.6f), CornerRadius(2f * density))
+                drawCircle(tint, radius = w * 0.42f, center = center, style = line)
+                drawLine(tint, Offset(w * 0.40f, w * 0.34f), Offset(w * 0.40f, w * 0.66f), strokeWidth = 2.5f * density, cap = StrokeCap.Round)
+                drawLine(tint, Offset(w * 0.60f, w * 0.34f), Offset(w * 0.60f, w * 0.66f), strokeWidth = 2.5f * density, cap = StrokeCap.Round)
             }
             else -> drawCircle(tint, radius = w * 0.12f, center = center)
         }

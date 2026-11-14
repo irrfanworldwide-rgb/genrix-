@@ -18,15 +18,15 @@ import androidx.compose.ui.unit.sp
 
 /** The fixed brand palette (dark first). Screens use the semantic names further down instead. */
 object GenrixColors {
-    val Background = Color(0xFF070A12)
-    val BackgroundElevated = Color(0xFF0B1120)
-    val Card = Color(0xFF101827)
-    val CardElevated = Color(0xFF151F31)
-    val Cyan = Color(0xFF64D9FF)
-    val Violet = Color(0xFF8B7CFF)
-    val Glow = Color(0xFF3B82F6)
-    val TextPrimary = Color(0xFFF2F6FF)
-    val TextSecondary = Color(0xFF9BAAC2)
+    val Background = Color(0xFF030611)
+    val BackgroundElevated = Color(0xFF080D1B)
+    val Card = Color(0xFF0B1325)
+    val CardElevated = Color(0xFF101C33)
+    val Cyan = Color(0xFF00D9FF)
+    val Violet = Color(0xFF8B5CFF)
+    val Glow = Color(0xFF287BFF)
+    val TextPrimary = Color(0xFFF3F7FF)
+    val TextSecondary = Color(0xFF8FA4C4)
     val TextMuted = Color(0xFF66758D)
     val Success = Color(0xFF55E6A5)
     val Warning = Color(0xFFFFC66D)
@@ -45,9 +45,9 @@ object GenrixFonts {
 
 private val Dark = darkColorScheme(
     primary = GenrixColors.Cyan,
-    onPrimary = Color(0xFF04222B),
-    primaryContainer = Color(0xFF0E3A4A),
-    onPrimaryContainer = Color(0xFFBDEFFF),
+    onPrimary = Color(0xFF00252E),
+    primaryContainer = Color(0xFF0A3550),
+    onPrimaryContainer = Color(0xFFB8F1FF),
     secondary = GenrixColors.Violet,
     onSecondary = Color(0xFF100B33),
     tertiary = GenrixColors.Warning,
@@ -59,8 +59,8 @@ private val Dark = darkColorScheme(
     onSurfaceVariant = GenrixColors.TextSecondary,
     surfaceContainer = GenrixColors.BackgroundElevated,
     surfaceContainerHigh = GenrixColors.CardElevated,
-    outline = Color(0xFF2A3650),
-    outlineVariant = Color(0xFF1C2638),
+    outline = Color(0xFF22314F),
+    outlineVariant = Color(0xFF16223C),
     error = GenrixColors.Error,
 )
 

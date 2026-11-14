@@ -169,9 +169,9 @@ fun Orb(
 
         // A few drifting particles, only while the assistant is active.
         if (phase != Phase.Off || e > 0.05f) {
-            for (i in 0 until 8) {
+            for (i in 0 until 14) {
                 val sign = if (i % 2 == 0) 1 else -1
-                val ang = a * sign * (1 + i % 3) + i * (2f * PI.toFloat() / 8f)
+                val ang = a * sign * (1 + i % 3) + i * (2f * PI.toFloat() / 14f)
                 val rr = base * (1.55f + 0.12f * sin(a * 2f + i))
                 val alpha = (0.15f + 0.5f * e) * (0.5f + 0.5f * sin(a * 3f + i))
                 drawCircle(
@@ -182,15 +182,26 @@ fun Orb(
             }
         }
 
-        // Planet-style orbit rings, back half (drawn before the core).
-        if (rings) {
+        // Orbit rings (planet style): drawn in two halves so the rings pass behind and in front of the core.
+        fun ringArcs(startAngle: Float) {
             rotate(-18f + 3f * sin(a), c) {
                 val rw = base * 3.0f
                 val rh = base * 0.95f
-                drawArc(cyan.copy(alpha = 0.55f + 0.3f * e), 180f, 180f, false, Offset(c.x - rw / 2f, c.y - rh / 2f), Size(rw, rh), style = Stroke(2f * density))
-                drawArc(violet.copy(alpha = 0.40f + 0.2f * e), 180f, 180f, false, Offset(c.x - rw * 0.58f, c.y - rh * 0.62f), Size(rw * 1.16f, rh * 1.24f), style = Stroke(1.4f * density))
+                drawArc(cyan.copy(alpha = 0.55f + 0.3f * e), startAngle, 180f, false, Offset(c.x - rw / 2f, c.y - rh / 2f), Size(rw, rh), style = Stroke(2f * density))
+                drawArc(violet.copy(alpha = 0.40f + 0.2f * e), startAngle, 180f, false, Offset(c.x - rw * 0.58f, c.y - rh * 0.62f), Size(rw * 1.16f, rh * 1.24f), style = Stroke(1.4f * density))
+            }
+            rotate(24f - 3f * sin(a), c) {
+                val rw = base * 2.6f
+                val rh = base * 0.8f
+                drawArc(glow.copy(alpha = 0.45f + 0.3f * e), startAngle, 180f, false, Offset(c.x - rw / 2f, c.y - rh / 2f), Size(rw, rh), style = Stroke(1.4f * density))
+            }
+            rotate(52f - 4f * sin(a), c) {
+                val rw = base * 3.0f
+                val rh = base * 1.8f
+                drawArc(violet.copy(alpha = 0.50f), startAngle, 180f, false, Offset(c.x - rw / 2f, c.y - rh / 2f), Size(rw, rh), style = Stroke(1.3f * density))
             }
         }
+        if (rings) ringArcs(180f)
 
         // The core: an organic blob filled with drifting coloured light.
         path.rewind()
@@ -205,7 +216,7 @@ fun Orb(
         path.close()
         clipPath(path) {
             drawCircle(
-                Brush.radialGradient(listOf(Color(0xFF12203A), GenrixColors.Background), c, base * 1.15f),
+                Brush.radialGradient(listOf(Color(0xFF16356E), Color(0xFF071636), Color(0xFF020817)), c, base * 1.15f),
                 radius = base * 1.25f,
                 center = c,
             )
@@ -219,6 +230,17 @@ fun Orb(
                     radius = base * 1.25f,
                     center = c,
                 )
+            }
+            // Holographic globe grid: three parallels and three turning meridians.
+            val gridColor = cyan.copy(alpha = 0.10f + 0.12f * e)
+            for (k in -1..1) {
+                val dy = k * base * 0.45f
+                val half = kotlin.math.sqrt((base * base - dy * dy).coerceAtLeast(1f))
+                drawOval(gridColor, Offset(c.x - half, c.y + dy - base * 0.10f), Size(half * 2f, base * 0.20f), style = Stroke(1f * density))
+            }
+            for (j in 0..2) {
+                val mw = base * 2f * kotlin.math.abs(cos(a + j * PI.toFloat() / 3f))
+                drawOval(gridColor, Offset(c.x - mw / 2f, c.y - base), Size(mw, base * 2f), style = Stroke(1f * density))
             }
             // Thin inner energy ring.
             drawCircle(
@@ -244,15 +266,7 @@ fun Orb(
             ),
             style = Stroke(1.5f * density),
         )
-        // Front half of the orbit rings, over the core.
-        if (rings) {
-            rotate(-18f + 3f * sin(a), c) {
-                val rw = base * 3.0f
-                val rh = base * 0.95f
-                drawArc(cyan.copy(alpha = 0.55f + 0.3f * e), 0f, 180f, false, Offset(c.x - rw / 2f, c.y - rh / 2f), Size(rw, rh), style = Stroke(2f * density))
-                drawArc(violet.copy(alpha = 0.40f + 0.2f * e), 0f, 180f, false, Offset(c.x - rw * 0.58f, c.y - rh * 0.62f), Size(rw * 1.16f, rh * 1.24f), style = Stroke(1.4f * density))
-            }
-        }
+        if (rings) ringArcs(0f)
         // One burst when a command starts.
         if (b < 1f) {
             drawCircle(

@@ -3,5 +3,5 @@
     <color name="background">#FFF3F6FC</color>
     <color name="accent">#FF006B8A</color>
     <!-- The launcher icon is always dark, in light and dark mode. -->
-    <color name="ic_background">#FF070A12</color>
+    <color name="ic_background">#FF030611</color>
 </resources>

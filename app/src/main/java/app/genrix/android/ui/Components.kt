@@ -1,5 +1,14 @@
 package app.genrix.android.ui
 
+import androidx.compose.foundation.layout.height
+import kotlin.math.sin
+import kotlin.math.PI
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.foundation.Canvas
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.LinearEasing
 import app.genrix.android.Branding
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.graphics.Brush
@@ -65,9 +74,9 @@ fun Section(title: String?, modifier: Modifier = Modifier, content: @Composable 
     Column(modifier.fillMaxWidth()) {
         if (title != null) {
             Row(Modifier.padding(start = 4.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.size(3.dp, 12.dp).background(Accent, RoundedCornerShape(2.dp)))
+                Box(Modifier.size(3.dp, 18.dp).background(Accent, RoundedCornerShape(2.dp)))
                 Spacer(Modifier.width(8.dp))
-                Text(title.uppercase(), style = MaterialTheme.typography.titleSmall, color = Muted)
+                Text(title, style = MaterialTheme.typography.titleMedium)
             }
         }
         Column(
@@ -85,7 +94,7 @@ fun Section(title: String?, modifier: Modifier = Modifier, content: @Composable 
 @Composable
 fun SwitchRow(title: String, detail: String, checked: Boolean, enabled: Boolean = true, onChange: (Boolean) -> Unit) {
     Row(Modifier.fillMaxWidth().padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-        rowIcon(title)?.let { IconTile(it, size = 38.dp); Spacer(Modifier.width(12.dp)) }
+        rowIcon(title)?.let { (icon, color) -> IconCircle(icon, color, size = 48.dp); Spacer(Modifier.width(12.dp)) }
         Column(Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.titleMedium)
             Text(detail, style = MaterialTheme.typography.bodySmall, color = Muted, modifier = Modifier.padding(top = 2.dp))
@@ -99,7 +108,7 @@ fun SwitchRow(title: String, detail: String, checked: Boolean, enabled: Boolean 
 @Composable
 fun InfoRow(title: String, detail: String, trailing: @Composable (() -> Unit)? = null) {
     Row(Modifier.fillMaxWidth().padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-        rowIcon(title)?.let { IconTile(it, size = 38.dp); Spacer(Modifier.width(12.dp)) }
+        rowIcon(title)?.let { (icon, color) -> IconCircle(icon, color, size = 48.dp); Spacer(Modifier.width(12.dp)) }
         Column(Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.titleMedium)
             Text(detail, style = MaterialTheme.typography.bodySmall, color = Muted, modifier = Modifier.padding(top = 2.dp))
@@ -156,8 +165,8 @@ val MicIcon: ImageVector by lazy {
 /** The app's switch: cyan when on, quiet and bordered when off. */
 @Composable
 fun genrixSwitchColors(): SwitchColors = SwitchDefaults.colors(
-    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
-    checkedTrackColor = Accent,
+    checkedThumbColor = Color.White,
+    checkedTrackColor = GenrixColors.Glow,
     checkedBorderColor = Color.Transparent,
     uncheckedThumbColor = Muted,
     uncheckedTrackColor = Raised,
@@ -166,8 +175,30 @@ fun genrixSwitchColors(): SwitchColors = SwitchDefaults.colors(
 
 /** A screen's title, an optional one-line description and an optional control on the right. */
 @Composable
-fun ScreenHeader(title: String, subtitle: String? = null, modifier: Modifier = Modifier, trailing: @Composable (() -> Unit)? = null) {
-    Row(modifier.fillMaxWidth().padding(top = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+fun ScreenHeader(title: String, subtitle: String? = null, modifier: Modifier = Modifier, planet: Boolean = false, trailing: @Composable (() -> Unit)? = null) {
+    val limb = GenrixColors.Cyan
+    val haze = GenrixColors.Glow
+    Row(
+        modifier
+            .fillMaxWidth()
+            .then(
+                if (planet) {
+                    Modifier.drawBehind {
+                        val r = size.width * 0.62f
+                        val c = Offset(size.width, size.height * 1.4f)
+                        drawCircle(
+                            Brush.radialGradient(0.80f to Color.Transparent, 0.93f to haze.copy(alpha = 0.28f), 0.985f to limb.copy(alpha = 0.75f), 1f to Color.Transparent, center = c, radius = r),
+                            radius = r,
+                            center = c,
+                        )
+                    }
+                } else {
+                    Modifier
+                },
+            )
+            .padding(top = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         Column(Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.headlineSmall)
             if (subtitle != null) {
@@ -210,22 +241,36 @@ fun IconTile(icon: ImageVector, modifier: Modifier = Modifier, size: Dp = 40.dp)
     }
 }
 
-private fun rowIcon(title: String): ImageVector? {
+private fun rowIcon(title: String): Pair<ImageVector, Color>? {
     val t = title.lowercase()
     return when {
-        "key" in t -> Icons.Filled.Lock
-        "assistant" in t -> Icons.Filled.Home
-        "talk" in t -> Icons.Filled.Call
-        "wave" in t -> Icons.Filled.Face
-        "orb" in t || "any app" in t -> Icons.Filled.Star
-        "control" in t || "on this phone" in t -> Icons.Filled.Build
-        "wake" in t || "notif" in t -> Icons.Filled.Notifications
-        "speech" in t -> Icons.Filled.Search
-        "learn" in t || "knows" in t -> Icons.Filled.Person
-        "background" in t || "standby" in t -> Icons.Filled.Refresh
-        "gemini" in t -> Icons.Filled.Star
-        t == Branding.ASSISTANT_NAME.lowercase() -> Icons.Filled.Info
+        "key" in t -> Icons.Filled.Lock to GenrixColors.Glow
+        "assistant" in t -> Icons.Filled.Home to GenrixColors.Glow
+        "talk" in t -> Icons.Filled.Call to GenrixColors.Glow
+        "wave" in t -> Icons.Filled.Face to Color(0xFFFF6FE0)
+        "orb" in t || "any app" in t -> Icons.Filled.Star to GenrixColors.Violet
+        "control" in t || "on this phone" in t -> Icons.Filled.Build to GenrixColors.Glow
+        "wake" in t || "notif" in t -> Icons.Filled.Notifications to GenrixColors.Warning
+        "speech" in t -> Icons.Filled.Search to GenrixColors.Glow
+        "learn" in t || "knows" in t -> Icons.Filled.Person to GenrixColors.Violet
+        "background" in t || "standby" in t -> Icons.Filled.Refresh to GenrixColors.Glow
+        "gemini" in t -> Icons.Filled.Star to GenrixColors.Violet
+        t == Branding.ASSISTANT_NAME.lowercase() -> Icons.Filled.Info to GenrixColors.Cyan
         else -> null
+    }
+}
+
+/** A round icon with a coloured ring and a soft tint, as in the storyboard. */
+@Composable
+fun IconCircle(icon: ImageVector, color: Color, modifier: Modifier = Modifier, size: Dp = 54.dp) {
+    Box(
+        modifier
+            .size(size)
+            .background(Brush.radialGradient(listOf(color.copy(alpha = 0.30f), color.copy(alpha = 0.08f))), CircleShape)
+            .border(1.5.dp, color.copy(alpha = 0.9f), CircleShape),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(size * 0.48f))
     }
 }
 
@@ -239,21 +284,66 @@ fun Modifier.nebula(): Modifier {
     }
 }
 
-/** A row of pill filters; the selected one is filled with the accent colour. */
+/** A row of equal pill filters; the selected one glows blue. */
 @Composable
 fun ChipRow(options: List<String>, selected: String, modifier: Modifier = Modifier, onSelect: (String) -> Unit) {
-    Row(modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         options.forEach { option ->
             val on = option == selected
-            Text(
-                option,
-                style = MaterialTheme.typography.labelLarge,
-                color = if (on) MaterialTheme.colorScheme.onPrimary else Muted,
-                modifier = Modifier
-                    .background(if (on) Accent else Surface, RoundedCornerShape(50))
-                    .border(1.dp, if (on) Color.Transparent else MaterialTheme.colorScheme.outline, RoundedCornerShape(50))
-                    .pressScale { onSelect(option) }
-                    .padding(horizontal = 18.dp, vertical = 9.dp),
+            val shape = RoundedCornerShape(50)
+            Box(
+                Modifier
+                    .weight(1f)
+                    .height(46.dp)
+                    .background(
+                        if (on) Brush.horizontalGradient(listOf(Color(0xFF00B8FF), Color(0xFF2A8BFF))) else Brush.horizontalGradient(listOf(Surface, Surface)),
+                        shape,
+                    )
+                    .border(1.dp, if (on) Color.Transparent else glowBrush(), shape)
+                    .pressScale { onSelect(option) },
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    if (on && option == "All") "✦ $option" else option,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = if (on) Color.White else MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                )
+            }
+        }
+    }
+}
+
+/** A live waveform: bars that move while [active], and swell with the microphone or voice [level]. */
+@Composable
+fun Waveform(level: Float, active: Boolean, modifier: Modifier = Modifier) {
+    val cyan = Accent
+    val violet = AccentAlt
+    val time = if (active) {
+        rememberInfiniteTransition(label = "wave").animateFloat(
+            initialValue = 0f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(tween(1400, easing = LinearEasing)),
+            label = "phase",
+        )
+    } else {
+        null
+    }
+    Canvas(modifier) {
+        val bars = 30
+        val step = size.width / bars
+        val phase = (time?.value ?: 0f) * 2f * PI.toFloat()
+        val lv = level.coerceIn(0f, 1f)
+        for (i in 0 until bars) {
+            val wave = 0.5f + 0.5f * sin(phase + i * 0.55f)
+            val h = size.height * (0.10f + (if (active) 0.15f + 0.75f * lv else 0f) * wave)
+            val x = step * (i + 0.5f)
+            drawLine(
+                if (i % 2 == 0) cyan else violet,
+                Offset(x, center.y - h / 2f),
+                Offset(x, center.y + h / 2f),
+                strokeWidth = 3f * density,
+                cap = StrokeCap.Round,
             )
         }
     }

@@ -1,5 +1,12 @@
 package app.genrix.android.ui
 
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.mutableStateOf
@@ -95,22 +102,42 @@ private fun EmptyActivity() {
 
 @Composable
 fun ActivityRow(entry: ActivityLog.Entry) {
+    val ok = GenrixColors.Success
     Row(Modifier.fillMaxWidth().padding(vertical = 10.dp, horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-        IconTile(if (entry.local) Icons.Filled.Phone else Icons.Filled.Star, size = 38.dp)
-        Spacer(Modifier.width(12.dp))
+        Box(Modifier.size(44.dp).border(2.dp, ok, CircleShape), contentAlignment = Alignment.Center) {
+            Icon(Icons.Filled.Check, contentDescription = null, tint = ok, modifier = Modifier.size(22.dp))
+        }
+        Spacer(Modifier.width(14.dp))
         Column(Modifier.weight(1f)) {
             Text(entry.what, style = MaterialTheme.typography.titleMedium)
-            Text(entry.result, style = MaterialTheme.typography.bodySmall, color = Muted)
+            Text(agoText(entry.at), style = MaterialTheme.typography.bodySmall, color = Muted)
+            if (entry.result.isNotBlank()) {
+                Text(entry.result, style = MaterialTheme.typography.bodySmall, color = MutedDim, maxLines = 1)
+            }
         }
         Spacer(Modifier.width(8.dp))
-        Column(horizontalAlignment = Alignment.End) {
+        if (entry.what.contains("youtube", ignoreCase = true)) {
+            Canvas(Modifier.size(width = 40.dp, height = 28.dp)) {
+                drawRoundRect(Color(0xFFFF1A1A), Offset.Zero, size, CornerRadius(8f * density))
+                val play = Path().apply {
+                    moveTo(size.width * 0.42f, size.height * 0.28f)
+                    lineTo(size.width * 0.42f, size.height * 0.72f)
+                    lineTo(size.width * 0.68f, size.height * 0.5f)
+                    close()
+                }
+                drawPath(play, Color.White)
+            }
+        } else {
             Pill(if (entry.local) "On phone" else "Gemini", if (entry.local) Accent else AccentAlt, dot = false)
-            Text(
-                SimpleDateFormat("h:mm a", Locale.ENGLISH).format(Date(entry.at)),
-                style = MaterialTheme.typography.labelMedium,
-                color = MutedDim,
-                modifier = Modifier.padding(top = 4.dp),
-            )
         }
+    }
+}
+
+private fun agoText(at: Long): String {
+    val minutes = (System.currentTimeMillis() - at) / 60_000
+    return when {
+        minutes < 1 -> "just now"
+        minutes < 60 -> "$minutes min ago"
+        else -> SimpleDateFormat("h:mm a", Locale.ENGLISH).format(Date(at))
     }
 }

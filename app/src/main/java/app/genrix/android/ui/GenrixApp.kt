@@ -1,5 +1,25 @@
 package app.genrix.android.ui
 
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.border
+import androidx.compose.foundation.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.background
 import androidx.compose.animation.AnimatedContent
@@ -93,22 +113,34 @@ private fun Content(
     Scaffold(
         containerColor = Color.Transparent,
         bottomBar = {
-            NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainer, tonalElevation = 0.dp) {
-                Tab.entries.forEach {
-                    NavigationBarItem(
-                        selected = tab == it.ordinal,
-                        onClick = { setTab(it.ordinal) },
-                        icon = { Icon(it.icon, contentDescription = null) },
-                        label = { Text(it.label, style = MaterialTheme.typography.labelMedium, maxLines = 1) },
-                        alwaysShowLabel = true,
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = Accent,
-                            selectedTextColor = Accent,
-                            indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                            unselectedIconColor = Muted,
-                            unselectedTextColor = Muted,
-                        ),
-                    )
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
+                    .background(MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.94f), RoundedCornerShape(28.dp))
+                    .border(1.dp, glowBrush(), RoundedCornerShape(28.dp))
+                    .padding(6.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Tab.entries.forEach { item ->
+                    val active = tab == item.ordinal
+                    Column(
+                        Modifier
+                            .weight(1f)
+                            .background(
+                                if (active) Brush.verticalGradient(listOf(Accent.copy(alpha = 0.24f), GenrixColors.Glow.copy(alpha = 0.12f))) else Brush.verticalGradient(listOf(Color.Transparent, Color.Transparent)),
+                                RoundedCornerShape(22.dp),
+                            )
+                            .border(1.dp, if (active) Accent.copy(alpha = 0.55f) else Color.Transparent, RoundedCornerShape(22.dp))
+                            .pressScale { setTab(item.ordinal) }
+                            .padding(vertical = 8.dp)
+                            .semantics(mergeDescendants = true) { selected = active },
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        NavGlyph(item, if (active) Accent else Muted)
+                        Text(item.label, style = MaterialTheme.typography.labelMedium, color = if (active) Accent else Muted, maxLines = 1)
+                    }
                 }
             }
         },
@@ -134,6 +166,7 @@ private fun Content(
                     onPermissionAnswered = assistant::permissionAnswered,
                     onQuick = assistant::quick,
                     onSeeActivity = { setTab(Tab.Activity.ordinal) },
+                    onMenu = { setTab(Tab.Settings.ordinal) },
                     favourites = remember(activity.size) { assistant.favourites() },
                 )
                 Tab.Automations -> AutomationsScreen()
@@ -143,5 +176,34 @@ private fun Content(
             }
         }
     }
+    }
+}
+
+/** Navigation icons: the bolt and the bars are drawn; Home and Settings use the standard icons. */
+@Composable
+private fun NavGlyph(tab: Tab, color: Color) {
+    when (tab) {
+        Tab.Home -> Icon(Icons.Filled.Home, contentDescription = null, tint = color, modifier = Modifier.size(24.dp))
+        Tab.Settings -> Icon(Icons.Filled.Settings, contentDescription = null, tint = color, modifier = Modifier.size(24.dp))
+        Tab.Automations -> Canvas(Modifier.size(24.dp)) {
+            val w = size.width
+            val path = Path().apply {
+                moveTo(w * 0.56f, w * 0.06f)
+                lineTo(w * 0.18f, w * 0.56f)
+                lineTo(w * 0.46f, w * 0.56f)
+                lineTo(w * 0.42f, w * 0.94f)
+                lineTo(w * 0.82f, w * 0.40f)
+                lineTo(w * 0.54f, w * 0.40f)
+                close()
+            }
+            drawPath(path, color, style = Stroke(width = 2f * density, join = StrokeJoin.Round, cap = StrokeCap.Round))
+        }
+        Tab.Activity -> Canvas(Modifier.size(24.dp)) {
+            val w = size.width
+            val line = Stroke(width = 2f * density, cap = StrokeCap.Round)
+            drawRoundRect(color, Offset(w * 0.12f, w * 0.50f), Size(w * 0.18f, w * 0.38f), CornerRadius(3f * density), style = line)
+            drawRoundRect(color, Offset(w * 0.41f, w * 0.12f), Size(w * 0.18f, w * 0.76f), CornerRadius(3f * density), style = line)
+            drawRoundRect(color, Offset(w * 0.70f, w * 0.34f), Size(w * 0.18f, w * 0.54f), CornerRadius(3f * density), style = line)
+        }
     }
 }

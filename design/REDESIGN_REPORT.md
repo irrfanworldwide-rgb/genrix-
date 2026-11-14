@@ -33,3 +33,23 @@ Deliberately not done, because the app has no such feature or data (nothing was 
 - The Permissions, Command Result and Voice States sheets as separate screens. Onboarding keeps its existing flow and picks up the new theme.
 
 Still not built or run anywhere: push to GitHub and read the "Build APK" result.
+
+## Round 3: "Complete UI Redesign & Advanced JARVIS Experience" brief
+Done: palette from the brief (#030611, #0B1325, #00D9FF, #287BFF, #8B5CFF); the AI core is now a holographic globe (turning meridians and parallels, three orbit rings passing behind and in front, 14 particles, rim light, execution burst, error tint) with no letter on it; a live waveform while Listening or Speaking, driven by the real voice level; quick tiles show the real battery level and the real time; Recent shows "2 min ago" style times; floating glass bottom bar with drawn bolt and bars icons; Automations has command statistics counted from the real list, search, All / Local / AI / Approval filters, a Routines card with the real routine count, and seven expandable categories (including PC controls, which lists the real PC bridge commands); Settings has a Genrix card with the real version.
+
+Not done, on purpose (these would be fake or need work beyond a UI change):
+- Poppins or Inter fonts: they cannot be downloaded in the build environment, so the system fonts stay; `GenrixFonts` in `Theme.kt` is the one place to swap them.
+- "Premium Edition", "Explore 100+ Commands", an "Online" connection badge: no such feature or data. The existing status pill (Wake word off / Gemini / On phone) is kept.
+- Custom command creation, routine enable/disable, edit and run buttons: the app only supports making and deleting routines by voice, so only that exists.
+- The "Hey Genrix" hint under the orb: the wake word is not included in this build, so the hint stays "Tap the mic to talk."
+- Separate Volume, Flashlight and Calendar categories with their own icons: grouped into broader categories because the standard icon set has no matching icons.
+
+Never built or run: Gradle was not available here. Push to GitHub and read the "Build APK" result.
+
+## Round 4: same-to-same storyboard (confirmed by the owner)
+Built as the storyboard shows: hamburger, GENRIX wordmark and "Online" badge; globe orb with a gradient "G" and five orbit rings; two-line STANDBY pill with "Tap to talk or say “Hey Genrix”"; glass quick tiles with drawn Torch (bolt), Battery (green), Time and Pause icons; Recent Activity card with a green check ring and a YouTube badge for YouTube entries; mic with rings and curved lines; glowing floating nav; Automations with grid button, search pill, equal chips (All glows), a violet Routines card with a layered illustration, "Command Categories" rows with coloured icon circles (On this phone, Media & Entertainment, Time, Date & Calendar, System Controls, plus Tasks with your OK, PC controls and AI tasks) and the "Explore 100+ Commands" card; Settings with the planet limb, the G / GENRIX / "v… • Premium Edition" card, "AI Configuration" and "Features & Controls" groups with coloured icon circles and blue switches.
+
+Static on purpose (the owner chose "same to same"): the "Online" badge, "Premium Edition", the "Hey Genrix" hint and "100+" in "Explore 100+ Commands". The wake word is still not part of this build.
+What the controls really do: the hamburger opens Settings; the grid button and the Explore card open or collapse every category; the Recent check ring is drawn for every entry because the app records no success or failure flag.
+
+Not built, not run: Gradle was not available here. Push to GitHub and read the "Build APK" result.

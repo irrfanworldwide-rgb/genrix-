@@ -1,5 +1,10 @@
 package app.genrix.android.ui
 
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.Icons
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.TextStyle
@@ -64,25 +69,34 @@ fun SettingsScreen(assistant: AssistantViewModel) {
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
-        ScreenHeader("Settings", "Voice, floating orb, PC bridge and permissions.")
+        ScreenHeader("Settings", "Customize your Genrix experience", planet = true)
         Row(
-            Modifier.fillMaxWidth().background(Surface, MaterialTheme.shapes.large).border(1.dp, glowBrush(), MaterialTheme.shapes.large).padding(16.dp),
+            Modifier
+                .fillMaxWidth()
+                .background(Surface, RoundedCornerShape(30.dp))
+                .border(1.dp, glowBrush(), RoundedCornerShape(30.dp))
+                .padding(horizontal = 18.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(
-                Modifier.size(48.dp).background(Brush.linearGradient(listOf(Accent.copy(alpha = 0.3f), AccentAlt.copy(alpha = 0.3f))), RoundedCornerShape(14.dp)),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text("G", style = TextStyle(brush = Brush.linearGradient(listOf(Accent, AccentAlt)), fontSize = 26.sp, fontWeight = FontWeight.Bold))
+            Text(
+                "G",
+                style = TextStyle(
+                    brush = Brush.linearGradient(listOf(Color(0xFF00E1FF), Color(0xFF2A7BFF), Color(0xFF8B5CFF))),
+                    fontSize = 60.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                ),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.width(72.dp),
+            )
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(Branding.ASSISTANT_NAME.uppercase(), style = MaterialTheme.typography.titleLarge.copy(letterSpacing = 1.sp))
+                Text("v${versionName(LocalContext.current)} • Premium Edition", style = MaterialTheme.typography.bodyMedium, color = Muted)
             }
-            Spacer(Modifier.width(14.dp))
-            Column {
-                Text(Branding.ASSISTANT_NAME, style = MaterialTheme.typography.titleLarge)
-                Text(Branding.DESCRIPTOR, style = MaterialTheme.typography.labelMedium, color = Muted)
-            }
+            Icon(Icons.Filled.KeyboardArrowRight, contentDescription = null, tint = Muted)
         }
 
-        Section("Gemini") {
+        Section("AI Configuration") {
             InfoRow("API key", "Your own key, encrypted with Android Keystore on this phone. Used only for requests the phone can't handle. Gemini usage counts against your key's limits.") {
                 TextButton(onClick = assistant::forgetKey) { Text("Replace") }
             }
@@ -91,7 +105,7 @@ fun SettingsScreen(assistant: AssistantViewModel) {
             }
         }
 
-        Section("Conversation") {
+        Section("Features & Controls") {
             var talkOn by remember { mutableStateOf(assistant.talkOver) }
             SwitchRow(
                 "Talk over ${Branding.ASSISTANT_NAME}",
