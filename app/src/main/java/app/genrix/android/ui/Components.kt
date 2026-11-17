@@ -1,5 +1,6 @@
 package app.genrix.android.ui
 
+import androidx.compose.runtime.State
 import androidx.compose.foundation.layout.height
 import kotlin.math.sin
 import kotlin.math.PI
@@ -299,7 +300,7 @@ fun ChipRow(options: List<String>, selected: String, modifier: Modifier = Modifi
                         if (on) Brush.horizontalGradient(listOf(Color(0xFF00B8FF), Color(0xFF2A8BFF))) else Brush.horizontalGradient(listOf(Surface, Surface)),
                         shape,
                     )
-                    .border(1.dp, if (on) Color.Transparent else glowBrush(), shape)
+                    .then(if (on) Modifier else Modifier.border(1.dp, glowBrush(), shape))
                     .pressScale { onSelect(option) },
                 contentAlignment = Alignment.Center,
             ) {
@@ -319,7 +320,7 @@ fun ChipRow(options: List<String>, selected: String, modifier: Modifier = Modifi
 fun Waveform(level: Float, active: Boolean, modifier: Modifier = Modifier) {
     val cyan = Accent
     val violet = AccentAlt
-    val time = if (active) {
+    val time: State<Float>? = if (active) {
         rememberInfiniteTransition(label = "wave").animateFloat(
             initialValue = 0f,
             targetValue = 1f,

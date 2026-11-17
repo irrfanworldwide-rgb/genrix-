@@ -53,3 +53,9 @@ Static on purpose (the owner chose "same to same"): the "Online" badge, "Premium
 What the controls really do: the hamburger opens Settings; the grid button and the Explore card open or collapse every category; the Recent check ring is drawn for every entry because the app records no success or failure flag.
 
 Not built, not run: Gradle was not available here. Push to GitHub and read the "Build APK" result.
+
+## Round 5: floating orb fix
+Problem: the floating orb (the bubble shown over other apps) did not appear or stopped responding once Genrix was left. It is a window owned by the app, and without a foreground service Android puts the app to sleep soon after it leaves the screen.
+Fix: `orb/OrbService.kt` is a silent foreground service (type specialUse, declared in the manifest with its permission) that runs while the orb is switched on and allowed. `FloatingOrb.sync` starts it only while Genrix is on screen (Android only allows that) and stops it when the orb is switched off; the service restarts itself and shows the orb if Android ever kills the app. The overlay orb is also larger (76 dp, bigger sphere) so it is easy to see.
+By design the orb is hidden while Genrix itself is open; leave the app (press Home) to see it.
+Not run on a device: build with GitHub Actions and test by switching "Use Genrix over any app" on and pressing Home.

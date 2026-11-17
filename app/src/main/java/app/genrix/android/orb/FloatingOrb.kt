@@ -45,6 +45,15 @@ object FloatingOrb {
     /** Shows or hides the orb to match the setting, the permission and whether the app is open. */
     fun sync(context: Context) {
         val app = context.applicationContext
+        val enabled = Settings(app).floatingOrb && allowed(app)
+        // The service keeps the orb alive in other apps. It may only be started while Genrix is on screen.
+        if (!enabled) OrbService.stop(app) else if (appVisible) OrbService.start(app)
+        syncWindow(app)
+    }
+
+    /** Only the orb window: shown when it is wanted and Genrix itself is not on screen. (The service calls this one.) */
+    fun syncWindow(context: Context) {
+        val app = context.applicationContext
         val want = Settings(app).floatingOrb && allowed(app) && !appVisible
         if (want && host == null) show(app) else if (!want && host != null) hide(app)
     }
@@ -88,7 +97,7 @@ object FloatingOrb {
                             )
                         },
                 ) {
-                    Orb(state.phase, Modifier.fillMaxSize(), level, idleMotion = false)
+                    Orb(state.phase, Modifier.fillMaxSize(), level, idleMotion = false, compact = true)
                 }
             }
         }
@@ -152,5 +161,5 @@ object FloatingOrb {
         context.startActivity(Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
     }
 
-    private const val ORB_DP = 64
+    private const val ORB_DP = 76
 }

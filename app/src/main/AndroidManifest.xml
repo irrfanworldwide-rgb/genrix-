@@ -17,6 +17,7 @@
     <!-- The floating orb over other apps; off until the user turns it on in Settings. -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <!-- Apps Genrix hands work to (Android 11+ hides other apps unless listed). -->
     <queries>
@@ -93,6 +94,14 @@
             android:name=".assistant.VoiceService"
             android:exported="false"
             android:foregroundServiceType="microphone" />
+        <service
+            android:name=".orb.OrbService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Floating assistant orb drawn over other apps" />
+        </service>
         <receiver
             android:name=".reminders.Reminders$ReminderReceiver"
             android:exported="false" />

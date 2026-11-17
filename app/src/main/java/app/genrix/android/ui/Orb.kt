@@ -61,6 +61,7 @@ fun Orb(
     error: Boolean = false,
     idleMotion: Boolean = true,
     rings: Boolean = false,
+    compact: Boolean = false,
 ) {
     val dark = isSystemInDarkTheme()
     val context = LocalContext.current
@@ -126,7 +127,7 @@ fun Orb(
         val b = burst.value
         val br = breath.value
         val a = t * 2f * PI.toFloat()
-        val base = size.minDimension / 2f * 0.52f * (1f + 0.06f * v + 0.025f * br)
+        val base = size.minDimension / 2f * (if (compact) 0.80f else 0.52f) * (1f + 0.06f * v + 0.025f * br)
         val wobble = 0.025f + 0.05f * e + 0.10f * v
         val cyan = lerp(GenrixColors.Cyan, GenrixColors.Warning, 0.6f * w)
         val violet = lerp(GenrixColors.Violet, GenrixColors.Error, 0.35f * w)
