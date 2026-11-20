@@ -1,5 +1,5 @@
 package app.genrix.android.ui
-
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.runtime.State
 import androidx.compose.foundation.layout.height
 import kotlin.math.sin
